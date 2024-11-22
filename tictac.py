@@ -29,7 +29,7 @@ class Jeu:
             f = Frame(self.root, background="white")
             self.tableau[p] = {}
             self.frames[p] = f
-            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0, highlightbackground="blue", highlightthickness=1)
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0)
 
         for h in range(9):
             self.creertictac(h)
