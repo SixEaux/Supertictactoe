@@ -1,4 +1,6 @@
 from tkinter import *
+
+
 class Jeu:
     def __init__(self, root, geometria):
 
@@ -29,15 +31,15 @@ class Jeu:
             f = Frame(self.root, background="white")
             self.tableau[p] = {}
             self.frames[p] = f
-            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0, highlightbackground="blue", highlightthickness=1)
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0) #, highlightbackground="blue", highlightthickness=1
 
         for h in range(9):
             self.creertictac(h)
 
     def creertictac(self, numpos):
         for p in range(len(self.positionspossibles)):
-            b = Button(self.frames[numpos], borderwidth = 0, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0)
+            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0, ipadx = 0, ipady = 0)
             self.obj[numpos].append((p, b))
 
 
