@@ -26,6 +26,7 @@ class Jeu:
 
 
 
+
     def initialisationgraph(self): #creer frames pour chaque garnd carré puis grid et ajouter tous les tiktaktoes
         for p in range(len(self.positionspossibles)):
             f = Frame(self.root, background="white")
@@ -40,6 +41,14 @@ class Jeu:
         for p in range(len(self.positionspossibles)):
             b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0, ipadx = 0, ipady = 0)
+            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0)
+
+            height=round(int(self.geometry[0])/83)/2
+            width=round(int(self.geometry[0])/83)
+            print(height, width)
+            b.config( height =int(height), width =int(width) )
+
             self.obj[numpos].append((p, b))
 
 
