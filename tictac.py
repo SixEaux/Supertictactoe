@@ -8,11 +8,13 @@ class Jeu:
         self.root.resizable(0, 0)
         self.root.title("SuperTicTacToe")
         self.root.geometry(geometria)
+        self.geometry = (geometria[:3], geometria[4:])
         self.frames = {} # tous les ojets graphiques de frames avec en cle la position dans le tableau (1,1) , (1,2) ...
         self.tableau = {} # code du tableau c'est 11,12,13,14...
         self.obj = {i : [] for i in range(9)}
         self.croix = [] #positions avec croix
         self.rond = [] #positions ou il y a un rond
+        self.signe = True #True = X et False = O
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4]
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]
         self.root.columnconfigure(0, weight=1)
@@ -21,7 +23,12 @@ class Jeu:
         self.root.rowconfigure(0, weight=1)
         self.root.rowconfigure(1, weight=1)
         self.root.rowconfigure(2, weight=1)
+        print(help(self.root.winfo_x))
+        print(dir(self.root))
+
         self.initialisationgraph()
+
+
 
 
 
@@ -39,9 +46,8 @@ class Jeu:
 
     def creertictac(self, numpos):
         for p in range(len(self.positionspossibles)):
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0, ipadx = 0, ipady = 0)
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
+
+            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black", command = self.creerxo())
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0)
 
             height=round(int(self.geometry[0])/83)/2
@@ -58,10 +64,22 @@ class Jeu:
     def placement(self, figure, pos):
         pass
 
-    def creerxo(self, signe):
-        pass
+    def creerxo(self):
+        #utiliser bouton.configure()
+        pos = b.grid_location()
+        f = b.winfo_parent()
+
+        """
+        x = bouton.winfo_rootx()
+        y = bouton.winfo_rooty()
+        taille = bouton.winfo_height()"""
+
+        b.destroy()
+        canvas = Canvas(f, background="white")
+        canvas.grid(row = pos[0], column = pos[1])
+        canvas.create_text(canvas.winfo_height()/2, canvas.winfo_height()/2, text = "X" )
 
 
 root = Tk()
-g = Jeu(root, "450x450")
+g = Jeu(root, "500x500")
 root.mainloop()
