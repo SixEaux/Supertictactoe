@@ -13,6 +13,7 @@ class Jeu:
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4]
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]
+
         self.postotab = {(0,0):0, (0,1):1, (0,2):2, (1,0):3, (1,1):4, (1,2): 5, (2,0):6, (2,1):7, (2,2):8}
 
         self.height = round(int(self.geometry[0]) / 83) / 2
@@ -21,8 +22,7 @@ class Jeu:
         for i in range(3):
             self.root.columnconfigure(i, weight=1)
             self.root.rowconfigure(i, weight=1)
-        self.root.columnconfigure(3, weight=3)
-        self.root.rowconfigure(3, weight=1)
+
         self.bool = True
 
         print(dir(self.root))
