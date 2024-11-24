@@ -15,11 +15,15 @@ class Jeu:
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]
         self.postotab = {(0,0):0, (0,1):1, (0,2):2, (1,0):3, (1,1):4, (1,2): 5, (2,0):6, (2,1):7, (2,2):8}
 
+        self.height = round(int(self.geometry[0]) / 83) / 2
+        self.width = round(int(self.geometry[0]) / 83)
+
         for i in range(3):
             self.root.columnconfigure(i, weight=1)
             self.root.rowconfigure(i, weight=1)
         self.root.columnconfigure(3, weight=3)
         self.root.rowconfigure(3, weight=1)
+        self.bool = True
 
         print(dir(self.root))
 
@@ -44,12 +48,10 @@ class Jeu:
     def creertictac(self, frame):
         for p in range(len(self.positionspossibles)):
             b = Button(frame, borderwidth = 1, background="white", foreground="black")
+            b.config(command = lambda: self.creerxo(self.bool, b))
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=1, pady=1)
 
-            height=round(int(self.geometry[0])/83)/2
-            width=round(int(self.geometry[0])/83)
-
-            b.config( height =int(height), width =int(width))
+            b.config(height =int(self.height), width =int(self.width))
 
 
 
@@ -70,9 +72,15 @@ class Jeu:
     def placement(self, figure, pos):
         pass
 
-    def creerxo(self, signe):
-        pass
+    def creerxo(self, signe, b):
+        pos = (b.grid_info()["row"], b.grid_info()["column"])
+        f = b.winfo_parent()
+        b.destroy()
 
+        canvas = Canvas(self.root.nametowidget(f), background="white")
+        canvas.grid(row=pos[0], column=pos[1])
+        canvas.config(height =int(self.height), width =int(self.width))
+        canvas.create_text(canvas.winfo_height() / 2, canvas.winfo_height() / 2, text="X")
 
 
 
