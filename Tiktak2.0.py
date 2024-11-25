@@ -1,11 +1,13 @@
 from tkinter import *
 from itertools import cycle
+
+from tkinter import font as tkFont
 from tabulate import tabulate
 
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red"), ("O", "blue"))
+        self.joueurs = (("X", "indianred"), ("O", "lightblue"))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -29,13 +31,12 @@ class Jeutab:
         elif self.grostictac[mouvement[1]] != "":
             self.queltictac = None
 
-
     def mouvpossible(self, mouvement): #regarder su mouvement est possible et regarder si le mouvement est sur le bon tiktak / mouvement serait surement des coordonnées (grosframe,petitframe)
         if (self.fin == False and (self.queltictac is None or self.queltictac == mouvement[0])
                 and self.grostictac[mouvement[0]] == "" and self.tableau[mouvement[0]][mouvement[1]] == ""):
             return True
         else:
-            print("Imp")
+            print("NON")
             return False
 
     def fairemouvement(self, mouvement): #faire mouvement dans tableau si possible
@@ -68,6 +69,7 @@ class Jeutab:
     def gagnetot(self, signe): #le gros tictactoe est gagné et il faut donner qui a gagné
         self.fin = True
         self.gagnant = signe
+        print(self.gagnant)
 
     def estceegalite(self, tictac): #regarder si il y a egalite / tictac c'est directement le tableau
         cpt = 0
@@ -81,6 +83,7 @@ class Jeutab:
     def egalite(self): #fin si egalite
         self.fin = True
         self.gagnant = "Aucun des deux"
+        print(self.gagnant)
 
     def rejouer(self): # remettre tout à zero pour rejouer
         self.fin = False
@@ -100,14 +103,12 @@ class Menujeu(Tk):
         menu = Frame(self)
         menu.pack()
         Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Jouer', command=lambda: self.alleraujeu('jeu')).pack()
+        Button(menu, text='Jouer', command=lambda: self.allerau('jeu')).pack()
         Button(menu, text='Quitter', command=self.quit).pack()
 
-    def alleraujeu(self, enquoi):
+    def allerau(self, enquoi):
         self.destroy()
         Jeu(self.geometria)
-
-
 
 
 class Jeu(Tk, Jeutab):
@@ -120,6 +121,7 @@ class Jeu(Tk, Jeutab):
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4] #pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"] #pour stick frames
+        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
 
         self.txt = StringVar()
         self.label = None
@@ -141,7 +143,7 @@ class Jeu(Tk, Jeutab):
             self.rowconfigure(i, weight=1)
 
         for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
-            f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
+            f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
             f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
             self.postofrm.append(f)
 
@@ -161,7 +163,7 @@ class Jeu(Tk, Jeutab):
         f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
         f.grid(row=3, column=1)
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
-        self.label = Label(f, textvariable=self.txt, font=40)
+        self.label = Label(f, textvariable=self.txt, font=self.font)
         self.label.pack(side=BOTTOM)
 
     def creertictac(self, frame): #créer petits tiktaktoes
@@ -176,41 +178,58 @@ class Jeu(Tk, Jeutab):
         if self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
-            self.tourdejeu(self.nametowidget(bouton.winfo_parent()), pos)
+            self.tourdejeu(pos)
+        elif self.jeutab.fin:
+            self.txt.set("Fin du jeu. Vous pouvez rejouer.")
         else:
             self.txt.set("Réessaye")
 
-    def tourdejeu(self, frame, mouv):
-        posfrm = self.postofrm.index(frame)
+    def tourdejeu(self, mouv):
+        posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
 
-        if self.jeutab.estceegalite(tabfrm):
-            self.grostictac[posfrm] = "Imp"
-            if self.jeutab.estceegalite(self.postofrm):
-                self.fin("Egalite")
 
-        elif self.jeutab.gagnepetit(posfrm):
-            self.grostictac[posfrm] = self.jeutab.quijoue[0]
+        if self.jeutab.gagnepetit(posfrm):
+            self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
+            f = self.postofrm[posfrm]
+            self.actualiserfrm(f)
             if self.jeutab.gagnegros():
                 self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+
+        elif self.jeutab.estceegalite(tabfrm):
+            self.jeutab.grostictac[posfrm] = "XO"
+            for i in self.postofrm[mouv[0]].winfo_children():
+                i.config(text="", bg="black")
+            if self.jeutab.estceegalite(self.jeutab.grostictac):
+                self.fin("Egalite")
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
 
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.changetictac(mouv)
-        print() #chercher le suivant frame pour le mettre en couleur
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[1]].config(highlightbackground="brown", highlightthickness=2)
+
+    def actualiserfrm(self, frm):
+        for i in frm.winfo_children():
+            i.config(text="", bg = self.jeutab.quijoue[1])
 
     def fin(self, queltype):
         self.txt.set(queltype)
-        self.jeutab.gagnetot("Aucun")
+        self.jeutab.gagnetot(queltype)
 
     def rejouer(self): #tout remettre en place pour jouer
         pass
         # remettre à zero tous les elements de tableau
 
     def revenirmenu(self):
+        for i in self.winfo_children():
+            i.destroy()
         self.destroy()
-        Menujeu(self.geometria)
+        self.jeutab.rejouer()
+        Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
 
 
 def jouer():
