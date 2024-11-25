@@ -2,7 +2,6 @@ from tkinter import *
 from itertools import cycle
 from tabulate import tabulate
 
-# changer self.grostictac par une liste pcq il sert a rien le dic et changer aussi estceegalite et estcegagne pour avoir en parametre les tableaux directement et non pas les index
 
 class Jeutab:
     def __init__(self):
@@ -12,7 +11,7 @@ class Jeutab:
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
 
         self.tableau = {i : ["" for j in range(9)] for i in range(9)} #tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
-        self.grostictac = {i:"" for i in range(9)} #chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
+        self.grostictac = ["" for i in range(9)] #chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
         self.gagne = {(0,1,2), (3,4,5), (6,7,8), (0,3,6), (1,4,7), (2, 5, 8), (0,4,8), (2,4,6)} #positions à verifier si gagné
 
         self.fin = False #estce que il y a déjà un gagnant?
@@ -36,19 +35,20 @@ class Jeutab:
                 and self.grostictac[mouvement[0]] == "" and self.tableau[mouvement[0]][mouvement[1]] == ""):
             return True
         else:
-            print(mouvement, self.fin, self.queltictac, self.grostictac[mouvement[0]],
-                  self.tableau[mouvement[0]][mouvement[1]])
             print("Imp")
             return False
 
     def fairemouvement(self, mouvement): #faire mouvement dans tableau si possible
         if  self.mouvpossible(mouvement):
             self.tableau[mouvement[0]][mouvement[1]] = self.quijoue[0]
-            ver1 = self.gagnepetit(mouvement[0])
-            if self.estceegalite(mouvement):
-                self.grostictac[mouvement[0]] = "Impossible"
-            if ver1:
+            if self.gagnepetit(mouvement[0]):
+                self.grostictac[mouvement[0]] = self.quijoue[0]
                 self.gagnegros()
+            elif self.estceegalite(self.tableau[mouvement[0]]):
+                self.grostictac[mouvement[0]] = "Imp"
+                if self.estceegalite(self.grostictac):
+                    self.egalite()
+
             self.quijoue = next(self.ordre)
             self.changetictac(mouvement)
             self.printTableau()
@@ -63,15 +63,16 @@ class Jeutab:
         for i in self.gagne:
             if self.grostictac[i[0]] == self.grostictac[i[1]] == self.grostictac[i[2]] != "":
                 self.gagnetot(self.grostictac[i[0]])
-        if self.estceegalite(list(self.grostictac.keys())) and self.fin == False: self.egalite()
+        if self.estceegalite(self.grostictac) and self.fin == False: self.egalite()
+
 
     def gagnetot(self, signe): #le gros tictactoe est gagné et il faut donner qui a gagné
         self.fin = True
         self.gagnant = signe
 
-    def estceegalite(self, tictac): #regarder si il y a egalite
+    def estceegalite(self, tictac): #regarder si il y a egalite / tictac c'est directement le tableau
         cpt = 0
-        for i in self.tableau[tictac]:
+        for i in tictac:
             if i == "": cpt += 1
         if cpt == 0:
             return True
@@ -86,7 +87,7 @@ class Jeutab:
         self.fin = False
         self.gagnant = ""
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}
-        self.grostictac = {i: "" for i in range(9)}
+        self.grostictac = ["" for i in range(9)]
 
 
 class Menujeu(Tk):
@@ -144,6 +145,7 @@ class Jeu(Tk, Jeutab):
             f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
             f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
             self.postofrm.append(f)
+        print(self.postofrm)
 
         barre = Menu(self)
         options = Menu(barre, tearoff=0, activebackground="grey", activeforeground= "red")
@@ -172,29 +174,36 @@ class Jeu(Tk, Jeutab):
             b.config(height =int(self.height), width =int(self.width))
             self.butons[b] = (self.postofrm.index(frame), p)
 
-    def gagnegraph(self):
-        pass
-
-    def egalgraph(self):
-        pass
-
     def creerxo(self, bouton): #creer croix ou ronds
         pos = self.butons[bouton]
         if self.jeutab.mouvpossible(pos):
+            self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
-            self.tourdejeu(bouton.winfo_parent())
+            print(self.nametowidget(bouton.winfo_parent()))
+            self.tourdejeu(self.nametowidget(bouton.winfo_parent()), pos)
         else:
             self.txt.set("Réessaye")
 
-
-    def tourdejeu(self, frame):
+    def tourdejeu(self, frame, mouv):
         posfrm = self.postofrm.index(frame)
+        tabfrm = self.jeutab.tableau[posfrm]
 
-        if self.jeutab.estceegalite(posfrm):
-            self.txt.set("Egalite")
-            if self.jeutab.estceegalite()
+        if self.jeutab.estceegalite(tabfrm):
+            self.grostictac[posfrm] = "Imp"
+            if self.jeutab.estceegalite(self.postofrm):
+                self.fin("Egalite")
+
         elif self.jeutab.gagnepetit(posfrm):
+            self.grostictac[posfrm] = self.jeutab.quijoue[0]
+            if self.jeutab.gagnegros():
+                self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
+        self.jeutab.changejoueur()
+        self.jeutab.changetictac(mouv)
+
+    def fin(self, queltype):
+        self.txt.set(queltype)
+        self.jeutab.gagnetot("Aucun")
 
     def rejouer(self): #tout remettre en place pour jouer
         pass
