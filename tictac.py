@@ -7,24 +7,27 @@ class Jeu:
         self.root.resizable(0, 0)
         self.root.title("SuperTicTacToe")
         self.root.geometry(geometria)
-        self.frames = {} # tous les ojets graphiques de frames avec en cle la position dans le tableau (1,1) , (1,2) ...
+        self.geometry = tuple(map(int, geometria.split("x")))
+
         self.tableau = {} # code du tableau c'est 11,12,13,14...
-        self.obj = {i : [] for i in range(9)}
-        self.croix = [] #positions avec croix
-        self.rond = [] #positions ou il y a un rond
+
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4]
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]
-        self.root.columnconfigure(0, weight=1)
-        self.root.columnconfigure(1, weight=1)
-        self.root.columnconfigure(2, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        self.root.rowconfigure(1, weight=1)
-        self.root.rowconfigure(2, weight=1)
+
+        self.postotab = {(0,0):0, (0,1):1, (0,2):2, (1,0):3, (1,1):4, (1,2): 5, (2,0):6, (2,1):7, (2,2):8}
+
+        self.height = round(int(self.geometry[0]) / 83) / 2
+        self.width = round(int(self.geometry[0]) / 83)
+
+        for i in range(3):
+            self.root.columnconfigure(i, weight=1)
+            self.root.rowconfigure(i, weight=1)
+
+        self.bool = True
+
+        print(dir(self.root))
+
         self.initialisationgraph()
-
-
-
-
 
     def initialisationgraph(self): #creer frames pour chaque garnd carré puis grid et ajouter tous les tiktaktoes
         for p in range(len(self.positionspossibles)):
@@ -44,15 +47,11 @@ class Jeu:
 
     def creertictac(self, frame):
         for p in range(len(self.positionspossibles)):
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0, ipadx = 0, ipady = 0)
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0)
+            b = Button(frame, borderwidth = 1, background="white", foreground="black")
+            b.config(command = lambda: self.creerxo(self.bool, b))
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=1, pady=1)
 
-            height=round(int(self.geometry[0])/83)/2
-            width=round(int(self.geometry[0])/83)
-
-            b.config( height =int(height), width =int(width))
+            b.config(height =int(self.height), width =int(self.width))
 
 
 
@@ -73,12 +72,18 @@ class Jeu:
     def placement(self, figure, pos):
         pass
 
-    def creerxo(self, signe):
-        pass
+    def creerxo(self, signe, b):
+        pos = (b.grid_info()["row"], b.grid_info()["column"])
+        f = b.winfo_parent()
+        b.destroy()
 
+        canvas = Canvas(self.root.nametowidget(f), background="white")
+        canvas.grid(row=pos[0], column=pos[1])
+        canvas.config(height =int(self.height), width =int(self.width))
+        canvas.create_text(canvas.winfo_height() / 2, canvas.winfo_height() / 2, text="X")
 
 
 
 root = Tk()
-g = Jeu(root, "450x450")
+g = Jeu(root, "600x600")
 root.mainloop()
