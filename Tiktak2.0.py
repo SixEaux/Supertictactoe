@@ -51,7 +51,6 @@ class Jeutab:
 
             self.quijoue = next(self.ordre)
             self.changetictac(mouvement)
-            self.printTableau()
 
     def gagnepetit(self, tictac): #regarder si dans le tableau il y a des gagnants, tictac c'est quel tableau des petits
         for i in self.gagne:
@@ -145,7 +144,6 @@ class Jeu(Tk, Jeutab):
             f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
             f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
             self.postofrm.append(f)
-        print(self.postofrm)
 
         barre = Menu(self)
         options = Menu(barre, tearoff=0, activebackground="grey", activeforeground= "red")
@@ -163,15 +161,14 @@ class Jeu(Tk, Jeutab):
         f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
         f.grid(row=3, column=1)
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
-        self.label = Label(f, text= "Tour de: ", textvariable=self.txt, font=40)
+        self.label = Label(f, textvariable=self.txt, font=40)
         self.label.pack(side=BOTTOM)
 
     def creertictac(self, frame): #créer petits tiktaktoes
         for p in range(len(self.positionspossibles)):
             b = Button(frame, borderwidth = 1, background="white", foreground="black")
-            b.config(command = lambda a=b: self.creerxo(a))
+            b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width)) #une autre option serait de utiliser bind
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2, sticky="nsew")
-            b.config(height =int(self.height), width =int(self.width))
             self.butons[b] = (self.postofrm.index(frame), p)
 
     def creerxo(self, bouton): #creer croix ou ronds
@@ -179,7 +176,6 @@ class Jeu(Tk, Jeutab):
         if self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
-            print(self.nametowidget(bouton.winfo_parent()))
             self.tourdejeu(self.nametowidget(bouton.winfo_parent()), pos)
         else:
             self.txt.set("Réessaye")
@@ -199,7 +195,10 @@ class Jeu(Tk, Jeutab):
                 self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
         self.jeutab.changejoueur()
+        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+
         self.jeutab.changetictac(mouv)
+        print() #chercher le suivant frame pour le mettre en couleur
 
     def fin(self, queltype):
         self.txt.set(queltype)
