@@ -7,7 +7,7 @@ from tabulate import tabulate
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "indianred"), ("O", "lightblue"))
+        self.joueurs = (("X", "red"), ("O", "blue"))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -90,6 +90,9 @@ class Jeutab:
         self.gagnant = ""
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}
         self.grostictac = ["" for i in range(9)]
+        self.queltictac = None
+        self.ordre = cycle(self.joueurs)  # ordre des joueurs
+        self.quijoue = next(self.ordre)  # a qui le tour
 
 
 class Menujeu(Tk):
@@ -134,6 +137,7 @@ class Jeu(Tk, Jeutab):
         self.postofrm = []
         self.butons = {}
 
+
         self.initialisationgraph()
 
     def initialisationgraph(self): #creer frames pour chaque garnd carré puis grid et ajouter tous les tiktaktoes
@@ -160,7 +164,7 @@ class Jeu(Tk, Jeutab):
 
         self.rowconfigure(3, weight=3)
 
-        f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
+        f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
         f.grid(row=3, column=1)
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
         self.label = Label(f, textvariable=self.txt, font=self.font)
@@ -175,19 +179,18 @@ class Jeu(Tk, Jeutab):
 
     def creerxo(self, bouton): #creer croix ou ronds
         pos = self.butons[bouton]
-        if self.jeutab.mouvpossible(pos):
+        if self.jeutab.fin:
+            self.txt.set("Fin du jeu. Vous pouvez rejouer.")
+        elif self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
             self.tourdejeu(pos)
-        elif self.jeutab.fin:
-            self.txt.set("Fin du jeu. Vous pouvez rejouer.")
         else:
-            self.txt.set("Réessaye")
+            self.txt.set("Impossible")
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
-
 
         if self.jeutab.gagnepetit(posfrm):
             self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
@@ -220,9 +223,17 @@ class Jeu(Tk, Jeutab):
         self.txt.set(queltype)
         self.jeutab.gagnetot(queltype)
 
+
     def rejouer(self): #tout remettre en place pour jouer
-        pass
-        # remettre à zero tous les elements de tableau
+        for i in self.postofrm:
+            for j in i.winfo_children():
+                j.config(text="", bg = "white")
+        self.txt.set("Prets?")
+        if self.jeutab.queltictac is not None:
+            self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
+        self.jeutab.rejouer()
+
+
 
     def revenirmenu(self):
         for i in self.winfo_children():
