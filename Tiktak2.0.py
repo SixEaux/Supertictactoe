@@ -1,8 +1,26 @@
 from tkinter import *
 from itertools import cycle
-
+from tkinter import messagebox
 from tkinter import font as tkFont
 from tabulate import tabulate
+
+class Menujeu(Tk):
+    def __init__(self, geometria):
+        super().__init__()
+        self.title("SuperTicTacToe")
+        self.geometria = geometria
+        self.menu()
+
+    def menu(self):
+        menu = Frame(self)
+        menu.pack()
+        Label(menu, text="SuperTicTacToe").pack()
+        Button(menu, text='Jouer', command=lambda: self.allerau('jeu')).pack()
+        Button(menu, text='Quitter', command=self.quit).pack()
+
+    def allerau(self, enquoi):
+        self.destroy()
+        Jeu(self.geometria)
 
 
 class Jeutab:
@@ -96,25 +114,6 @@ class Jeutab:
         self.quijoue = next(self.ordre)  # a qui le tour
 
 
-class Menujeu(Tk):
-    def __init__(self, geometria):
-        super().__init__()
-        self.title("SuperTicTacToe")
-        self.geometria = geometria
-        self.menu()
-
-    def menu(self):
-        menu = Frame(self)
-        menu.pack()
-        Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Jouer', command=lambda: self.allerau('jeu')).pack()
-        Button(menu, text='Quitter', command=self.quit).pack()
-
-    def allerau(self, enquoi):
-        self.destroy()
-        Jeu(self.geometria)
-
-
 class Jeu(Tk, Jeutab):
     def __init__(self, geometria):
         Tk.__init__(self)
@@ -188,7 +187,7 @@ class Jeu(Tk, Jeutab):
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
             self.tourdejeu(pos)
         else:
-            self.txt.set("Impossible")
+            messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
 
         if self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
@@ -227,7 +226,7 @@ class Jeu(Tk, Jeutab):
     def fin(self, queltype):
         self.txt.set(queltype)
         self.jeutab.gagnetot(queltype)
-
+        messagebox.showinfo("Fin du jeu", queltype, parent = self)
 
     def rejouer(self): #tout remettre en place pour jouer
         for i in self.postofrm:
@@ -237,8 +236,6 @@ class Jeu(Tk, Jeutab):
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
-
-
 
     def revenirmenu(self):
         for i in self.winfo_children():
