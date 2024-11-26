@@ -63,8 +63,9 @@ class Jeutab:
         for i in self.gagne:
             if self.grostictac[i[0]] == self.grostictac[i[1]] == self.grostictac[i[2]] != "":
                 self.gagnetot(self.grostictac[i[0]])
+                return True
         if self.estceegalite(self.grostictac) and self.fin == False: self.egalite()
-
+        return False
 
     def gagnetot(self, signe): #le gros tictactoe est gagné et il faut donner qui a gagné
         self.fin = True
@@ -179,8 +180,9 @@ class Jeu(Tk, Jeutab):
 
     def creerxo(self, bouton): #creer croix ou ronds
         pos = self.butons[bouton]
+
         if self.jeutab.fin:
-            self.txt.set("Fin du jeu. Vous pouvez rejouer.")
+            pass
         elif self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
@@ -188,7 +190,13 @@ class Jeu(Tk, Jeutab):
         else:
             self.txt.set("Impossible")
 
+        if self.jeutab.estceegalite(self.jeutab.grostictac):
+            self.fin("Egalite")
+        if self.jeutab.gagnegros():
+            self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+
     def tourdejeu(self, mouv):
+
         posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
 
@@ -196,15 +204,12 @@ class Jeu(Tk, Jeutab):
             self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
             f = self.postofrm[posfrm]
             self.actualiserfrm(f)
-            if self.jeutab.gagnegros():
-                self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
         elif self.jeutab.estceegalite(tabfrm):
             self.jeutab.grostictac[posfrm] = "XO"
             for i in self.postofrm[mouv[0]].winfo_children():
                 i.config(text="", bg="black")
-            if self.jeutab.estceegalite(self.jeutab.grostictac):
-                self.fin("Egalite")
+
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
