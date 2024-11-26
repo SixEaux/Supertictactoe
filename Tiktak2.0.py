@@ -230,7 +230,15 @@ class Multijoueur(Tk):
     def fin(self, queltype):
         self.txt.set(queltype)
         self.jeutab.gagnetot(queltype)
-        messagebox.showinfo("Fin du jeu", queltype, parent = self) #faire plutôt une nouvelle tk.Toplevel dessus et apres l'enlever
+        # messagebox.showinfo("Fin du jeu", queltype, parent = self) #faire plutôt une nouvelle tk.Toplevel dessus et apres l'enlever
+        rootsecond = Toplevel()
+        rootsecond.title("Cela est un message de fin")
+
+        lab = Label(rootsecond, background="white", text = f"FIN DU JEU \n {queltype} \n Vous pouvez rejouer...\n si vous le souhaitez.", font = self.font)
+        lab.pack(side=TOP)
+        but = Button(rootsecond, text="Revenir au Jeu", fg="white", bg="black", command=rootsecond.destroy)
+        but.pack(side=BOTTOM)
+        rootsecond.focus()
 
     def rejouer(self): #tout remettre en place pour jouer
         for i in self.postofrm:
@@ -251,7 +259,6 @@ class Multijoueur(Tk):
 class MultijoueurPokemon(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
-
         self.jeutab = Jeutab()
 
         self.title("Multijoueur pokemon")
@@ -260,7 +267,57 @@ class MultijoueurPokemon(Tk):
 
         self.positionspossibles = [(i, j) for i in range(3) for j in range(3) if i + j <= 4]  # pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]  # pour stick frames
+        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
 
+        self.txt = StringVar()
+        self.label = None
+
+        self.height = round(int(self.geometria[0]) / 83) / 2
+        self.width = round(int(self.geometria[0]) / 83)
+
+        print(dir(self))
+
+        self.postofrm = []
+        self.butons = {}
+
+        #pokemons de chaque equipe en les creant avec fonction eina
+        self.equiperouge = None
+        self.equipebleu = None
+
+    def initialisationgraph(self):
+        for i in range(3):
+            self.columnconfigure(i, weight=1)
+            self.rowconfigure(i, weight=1)
+
+        for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
+            f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
+            self.postofrm.append(f)
+
+        barre = Menu(self)
+        options = Menu(barre, tearoff=0, activebackground="grey", activeforeground= "red")
+        barre.add_cascade(label="| Options |", menu=options)
+        options.add_command(label="Revenir au Menu", command=lambda: self.revenirmenu())
+        options.add_separator()
+        options.add_command(label="Rejouer", command=lambda: self.rejouer())
+        self.config(menu=barre)
+
+        # creer tictacs mais en appelant une autre fonction qui creer pokemons
+
+        self.rowconfigure(3, weight=3)
+
+        f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
+        f.grid(row=3, column=1)
+        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+        self.label = Label(f, textvariable=self.txt, font=self.font)
+        self.label.pack(side=BOTTOM)
+
+
+    def mouvement(self): #si il n'y a aucun pokemon je le mets sinon combat
+        pass
+
+    def combat(self):
+        pass
 
 
 
