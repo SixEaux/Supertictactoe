@@ -15,17 +15,21 @@ class Menujeu(Tk):
         menu = Frame(self)
         menu.pack()
         Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Jouer', command=lambda: self.allerau('jeu')).pack()
+        Button(menu, text='Multijoueur', command=lambda: self.allerau('jeu')).pack()
+        Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
         Button(menu, text='Quitter', command=self.quit).pack()
 
     def allerau(self, enquoi):
         self.destroy()
-        Jeu(self.geometria)
+        if enquoi == 'jeu':
+            Multijoueur(self.geometria)
+        elif enquoi == 'pokemon':
+            MultijoueurPokemon(self.geometria)
 
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red"), ("O", "blue"))
+        self.joueurs = (("X", "red", "indianred"), ("O", "blue", "lightblue"))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -114,13 +118,14 @@ class Jeutab:
         self.quijoue = next(self.ordre)  # a qui le tour
 
 
-class Jeu(Tk, Jeutab):
+class Multijoueur(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
         self.jeutab = Jeutab()
 
         self.title("Multijoueur")
         self.geometria = tuple(map(int, geometria.split("x"))) #dimensions fenetre
+        self.resizable(width=False, height=False)
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4] #pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"] #pour stick frames
@@ -136,7 +141,6 @@ class Jeu(Tk, Jeutab):
 
         self.postofrm = []
         self.butons = {}
-
 
         self.initialisationgraph()
 
@@ -221,12 +225,12 @@ class Jeu(Tk, Jeutab):
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
-            i.config(text="", bg = self.jeutab.quijoue[1])
+            i.config(text="", bg = self.jeutab.quijoue[2])
 
     def fin(self, queltype):
         self.txt.set(queltype)
         self.jeutab.gagnetot(queltype)
-        messagebox.showinfo("Fin du jeu", queltype, parent = self)
+        messagebox.showinfo("Fin du jeu", queltype, parent = self) #faire plutôt une nouvelle tk.Toplevel dessus et apres l'enlever
 
     def rejouer(self): #tout remettre en place pour jouer
         for i in self.postofrm:
@@ -243,6 +247,22 @@ class Jeu(Tk, Jeutab):
         self.destroy()
         self.jeutab.rejouer()
         Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
+
+class MultijoueurPokemon(Tk):
+    def __init__(self, geometria):
+        Tk.__init__(self)
+
+        self.jeutab = Jeutab()
+
+        self.title("Multijoueur pokemon")
+        self.geometria = tuple(map(int, geometria.split("x")))  # dimensions fenetre
+        self.resizable(width=False, height=False)
+
+        self.positionspossibles = [(i, j) for i in range(3) for j in range(3) if i + j <= 4]  # pour affichage frames
+        self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]  # pour stick frames
+
+
+
 
 
 def jouer():
