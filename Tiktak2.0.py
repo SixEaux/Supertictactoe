@@ -230,7 +230,7 @@ class Multijoueur(Tk):
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.changetictac(mouv)
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground="brown", highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
@@ -419,11 +419,11 @@ class MultijoueurPokemon(Tk):
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.changetictac(mouv)
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground="brown", highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
-            i.config(text="", bg = self.jeutab.quijoue[2], image=None)
+            i.config(text="", bg = self.jeutab.quijoue[2], image="")
 
     def combat(self): #, poke1, poke2 #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
         pass
@@ -453,7 +453,7 @@ class MultijoueurPokemon(Tk):
     def rejouer(self): #tout remettre en place pour jouer
         for i in self.postofrm:
             for j in i.winfo_children():
-                j.config(text="", bg = "white")
+                j.config(text="", bg = "white", image="")
         self.txt.set("Prets?")
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
