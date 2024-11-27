@@ -196,6 +196,7 @@ class Multijoueur(Tk):
         if self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
         if self.jeutab.gagnegros():
+            self.jeutab.changejoueur()
             self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
     def tourdejeu(self, mouv):
@@ -230,7 +231,6 @@ class Multijoueur(Tk):
     def fin(self, queltype):
         self.txt.set(queltype)
         self.jeutab.gagnetot(queltype)
-        # messagebox.showinfo("Fin du jeu", queltype, parent = self) #faire plutôt une nouvelle tk.Toplevel dessus et apres l'enlever
         rootsecond = Toplevel()
         rootsecond.title("Cela est un message de fin")
 
@@ -318,7 +318,6 @@ class MultijoueurPokemon(Tk):
 
     def combat(self):
         pass
-
 
 
 
