@@ -3,6 +3,7 @@ from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 from tabulate import tabulate
+import pandas as pd
 
 class Menujeu(Tk):
     def __init__(self, geometria):
@@ -280,9 +281,11 @@ class MultijoueurPokemon(Tk):
         self.postofrm = []
         self.butons = {}
 
-        #pokemons de chaque equipe en les creant avec fonction eina
-        self.equiperouge = None
-        self.equipebleu = None
+        self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
+        self.equiperouge, self.equipebleu = self.selectionner_pokemon(60)
+        print(self.equiperouge, "\n", self.equipebleu)
+
+        self.initialisationgraph()
 
     def initialisationgraph(self):
         for i in range(3):
@@ -301,6 +304,8 @@ class MultijoueurPokemon(Tk):
         options.add_separator()
         options.add_command(label="Rejouer", command=lambda: self.rejouer())
         self.config(menu=barre)
+        for h in self.postofrm:
+            self.creertiktak(h)
 
         # creer tictacs mais en appelant une autre fonction qui creer pokemons
 
@@ -312,12 +317,64 @@ class MultijoueurPokemon(Tk):
         self.label = Label(f, textvariable=self.txt, font=self.font)
         self.label.pack(side=BOTTOM)
 
+    def creertiktak(self, frame):
+        for p in range(len(self.positionspossibles)):
+            b = Button(frame, borderwidth=1, background="white", foreground="black")
+            b.config(command=lambda a=b: self.choixpokemon(a), height=int(self.height),
+                     width=int(self.width))  # une autre option serait de utiliser bind
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2,
+                   sticky="nsew")
+            self.butons[b] = (self.postofrm.index(frame), p)
 
-    def mouvement(self): #si il n'y a aucun pokemon je le mets sinon combat
+    def selectionner_pokemon(self, n):
+        df = self.pokedex.sample(2 * n)
+        groupe1 = [df.index[0]]
+        groupe2 = [df.index[1]]
+
+        somme1 = df.iloc[0]["Total"]
+        somme2 = df.iloc[1]["Total"]
+        for i in range(2, n * 2):
+            s = df.iloc[i]["Total"]
+            if len(groupe2) == 60:
+                somme1 += s
+                groupe1.append(df.index[i])
+            elif len(groupe1) == 60:
+                somme2 += s
+                groupe2.append(df.index[i])
+            elif abs(somme1 + s - somme2) > abs(somme2 + s - somme1):
+                somme2 += s
+                groupe2.append(df.index[i])
+            else:
+                somme1 += s
+                groupe1.append(df.index[i])
+
+        return groupe1, groupe2
+
+    def mouvement(self, mouv): #si il n'y a aucun pokemon je le mets sinon combat
         pass
 
-    def combat(self):
+    def combat(self, poke1, poke2):
         pass
+
+    def choixpokemon(self, buton):
+        pass
+
+
+    def revenirmenu(self):
+        for i in self.winfo_children():
+            i.destroy()
+        self.destroy()
+        self.jeutab.rejouer()
+        Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
+
+    def rejouer(self): #tout remettre en place pour jouer
+        for i in self.postofrm:
+            for j in i.winfo_children():
+                j.config(text="", bg = "white")
+        self.txt.set("Prets?")
+        if self.jeutab.queltictac is not None:
+            self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
+        self.jeutab.rejouer()
 
 
 
