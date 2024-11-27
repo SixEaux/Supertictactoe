@@ -157,8 +157,8 @@ class Multijoueur(Tk):
     def initialisationgraph(self): #creer frames pour chaque garnd carré puis grid et ajouter tous les tiktaktoes
 
         for i in range(3):
-            self.columnconfigure(i, weight=1)
-            self.rowconfigure(i, weight=1)
+            self.columnconfigure(i, weight=1, uniform="column")
+            self.rowconfigure(i, weight=1, uniform="row")
 
         for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
             f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
@@ -186,6 +186,8 @@ class Multijoueur(Tk):
 
     def creertictac(self, frame): #créer petits tiktaktoes
         for p in range(len(self.positionspossibles)):
+            frame.rowconfigure(self.positionspossibles[p][0], weight=1, uniform="row1")
+            frame.columnconfigure(self.positionspossibles[p][1], weight=1, uniform="column1")
             b = Button(frame, borderwidth = 1, background="white", foreground="black")
             b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width))
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2, sticky="nsew")
@@ -336,7 +338,7 @@ class MultijoueurPokemon(Tk):
             b = Button(frame, borderwidth=1, background="white", foreground="black")
             b.config(command=lambda a=b: self.mouvementpoke(a), height=int(self.height),
                      width=int(self.width))  # une autre option serait de utiliser bind
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=4, pady=4,
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2,
                    sticky="nsew")
             self.butons[b] = (self.postofrm.index(frame), p)
 
@@ -394,7 +396,6 @@ class MultijoueurPokemon(Tk):
         else:
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",
                                        parent=self)
-        print(buton.winfo_width(), buton.winfo_height())
 
         if self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
