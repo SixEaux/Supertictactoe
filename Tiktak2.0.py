@@ -30,7 +30,7 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red", "indianred"), ("O", "blue", "lightblue"))
+        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(12, 12)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(12, 12)))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -60,6 +60,13 @@ class Jeutab:
             return True
         else:
             print("NON")
+            return False
+
+    def mouvpossiblepoke(self, mouvement):
+        if (self.fin == False and (self.queltictac is None or self.queltictac == mouvement[0])
+                and self.grostictac[mouvement[0]] == ""):
+            return True
+        else:
             return False
 
     def fairemouvement(self, mouvement): #faire mouvement dans tableau si possible
@@ -211,7 +218,7 @@ class Multijoueur(Tk):
             self.actualiserfrm(f)
 
         elif self.jeutab.estceegalite(tabfrm):
-            self.jeutab.grostictac[posfrm] = "XO"
+            self.jeutab.grostictac[posfrm] = "666"
             for i in self.postofrm[mouv[0]].winfo_children():
                 i.config(text="", bg="black")
 
@@ -282,8 +289,10 @@ class MultijoueurPokemon(Tk):
         self.butons = {}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
-        self.equiperouge, self.equipebleu = self.selectionner_pokemon(60)
-        print(self.equiperouge, "\n", self.equipebleu)
+        a,b = self.selectionner_pokemon(60)
+        self.equipes = {"X":a, "O":b}
+
+        self.pokemonutilise = {i : ["" for j in range(9)] for i in range(9)} #pokemons qui ont été utilises
 
         self.initialisationgraph()
 
@@ -320,7 +329,7 @@ class MultijoueurPokemon(Tk):
     def creertiktak(self, frame):
         for p in range(len(self.positionspossibles)):
             b = Button(frame, borderwidth=1, background="white", foreground="black")
-            b.config(command=lambda a=b: self.choixpokemon(a), height=int(self.height),
+            b.config(command=lambda a=b: self.mouvementpoke(a), height=int(self.height),
                      width=int(self.width))  # une autre option serait de utiliser bind
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2,
                    sticky="nsew")
@@ -350,15 +359,89 @@ class MultijoueurPokemon(Tk):
 
         return groupe1, groupe2
 
-    def mouvement(self, mouv): #si il n'y a aucun pokemon je le mets sinon combat
+    def mouvementpoke(self, buton): #si il n'y a aucun pokemon je le mets sinon combat
+        mouv = self.butons[buton]
+        print(self.jeutab.mouvpossiblepoke(mouv))
+        if self.jeutab.fin:
+            pass
+        elif self.jeutab.mouvpossiblepoke(mouv):
+            print("ooouuuiii")
+            if self.jeutab.tableau[mouv[0]][mouv[1]] == "":
+                pok = self.choixpokemon() #ouvrir fenetre pour choisir pokemon
+
+                self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
+                self.pokemonutilise[mouv[0]][mouv[1]] = pok
+                buton.config(image=self.jeutab.quijoue[3])
+                self.tourdejeu(mouv)
+
+            elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.quijoue[0]:
+                print("non")
+                pok = self.choixpokemon()
+                combat = self.combat()
+                if combat == self.jeutab.tableau[mouv[0]][mouv[1]]:
+                    self.tourdejeu(mouv) #on garde le pokemon qui avait avant
+                elif combat == self.jeutab.quijoue[0]:
+                    self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
+                    self.pokemonutilise[mouv[0]][mouv[1]] = pok
+                    buton.config(image=self.jeutab.quijoue[3])
+                    self.tourdejeu(mouv)
+
+            else:
+                print("oops")
+                messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",
+                                       parent=self)
+
+            if self.jeutab.estceegalite(self.jeutab.grostictac):
+                self.fin("Egalite")
+            if self.jeutab.gagnegros():
+                self.jeutab.changejoueur()
+                self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+
+
+    def tourdejeu(self, mouv):
+        posfrm = mouv[0]
+        tabfrm = self.jeutab.tableau[posfrm]
+
+        if self.jeutab.gagnepetit(posfrm):
+            self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
+            f = self.postofrm[posfrm]
+            self.actualiserfrm(f)
+
+        elif self.jeutab.estceegalite(tabfrm):
+            self.jeutab.grostictac[posfrm] = "666"
+            for i in self.postofrm[mouv[0]].winfo_children():
+                i.config(text="", bg="black")
+
+        self.jeutab.changejoueur()
+        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        self.jeutab.changetictac(mouv)
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[1]].config(highlightbackground="brown", highlightthickness=2)
+
+    def actualiserfrm(self, frm):
+        for i in frm.winfo_children():
+            i.config(text="", bg = self.jeutab.quijoue[2], image=None)
+
+    def combat(self): #, poke1, poke2 #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
         pass
 
-    def combat(self, poke1, poke2):
+    def choixpokemon(self): #choix pokemon et l'enlever des pokemons dispo
         pass
 
-    def choixpokemon(self, buton):
-        pass
+    def fin(self, queltype):
+        self.txt.set(queltype)
+        self.jeutab.gagnetot(queltype)
+        rootsecond = Toplevel()
+        rootsecond.title("Cela est un message de fin")
 
+        lab = Label(rootsecond, background="white", text = f"FIN DU JEU \n {queltype} \n Vous pouvez rejouer...\n si vous le souhaitez.", font = self.font)
+        lab.pack(side=TOP)
+        but = Button(rootsecond, text="Revenir au Jeu", fg="white", bg="black", command=rootsecond.destroy)
+        but.pack(side=BOTTOM)
+        rootsecond.focus()
 
     def revenirmenu(self):
         for i in self.winfo_children():
