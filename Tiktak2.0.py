@@ -1,9 +1,11 @@
+from random import uniform
 from tkinter import *
 from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 from tabulate import tabulate
 import pandas as pd
+from PIL import Image, ImageTk
 
 class Menujeu(Tk):
     def __init__(self, geometria):
@@ -30,7 +32,7 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(12, 12)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(12, 12)))
+        self.joueurs = ("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -185,7 +187,7 @@ class Multijoueur(Tk):
     def creertictac(self, frame): #créer petits tiktaktoes
         for p in range(len(self.positionspossibles)):
             b = Button(frame, borderwidth = 1, background="white", foreground="black")
-            b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width)) #une autre option serait de utiliser bind
+            b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width))
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2, sticky="nsew")
             self.butons[b] = (self.postofrm.index(frame), p)
 
@@ -298,12 +300,12 @@ class MultijoueurPokemon(Tk):
 
     def initialisationgraph(self):
         for i in range(3):
-            self.columnconfigure(i, weight=1)
-            self.rowconfigure(i, weight=1)
+            self.columnconfigure(i, weight=1, uniform="column")
+            self.rowconfigure(i, weight=1, uniform="row")
 
         for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
             f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
-            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky="nsew", padx=3, pady=3)
             self.postofrm.append(f)
 
         barre = Menu(self)
@@ -313,6 +315,7 @@ class MultijoueurPokemon(Tk):
         options.add_separator()
         options.add_command(label="Rejouer", command=lambda: self.rejouer())
         self.config(menu=barre)
+
         for h in self.postofrm:
             self.creertiktak(h)
 
@@ -328,10 +331,12 @@ class MultijoueurPokemon(Tk):
 
     def creertiktak(self, frame):
         for p in range(len(self.positionspossibles)):
+            frame.rowconfigure(self.positionspossibles[p][0], weight=1, uniform="row1")
+            frame.columnconfigure(self.positionspossibles[p][1], weight=1, uniform="column1")
             b = Button(frame, borderwidth=1, background="white", foreground="black")
             b.config(command=lambda a=b: self.mouvementpoke(a), height=int(self.height),
                      width=int(self.width))  # une autre option serait de utiliser bind
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2,
+            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=4, pady=4,
                    sticky="nsew")
             self.butons[b] = (self.postofrm.index(frame), p)
 
@@ -365,7 +370,6 @@ class MultijoueurPokemon(Tk):
         if self.jeutab.fin:
             pass
         elif self.jeutab.mouvpossiblepoke(mouv):
-            print("ooouuuiii")
             if self.jeutab.tableau[mouv[0]][mouv[1]] == "":
                 pok = self.choixpokemon() #ouvrir fenetre pour choisir pokemon
 
@@ -375,27 +379,28 @@ class MultijoueurPokemon(Tk):
                 self.tourdejeu(mouv)
 
             elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.quijoue[0]:
-                print("non")
                 pok = self.choixpokemon()
                 combat = self.combat()
+
                 if combat == self.jeutab.tableau[mouv[0]][mouv[1]]:
                     self.tourdejeu(mouv) #on garde le pokemon qui avait avant
+
                 elif combat == self.jeutab.quijoue[0]:
                     self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
                     self.pokemonutilise[mouv[0]][mouv[1]] = pok
                     buton.config(image=self.jeutab.quijoue[3])
                     self.tourdejeu(mouv)
 
-            else:
-                print("oops")
-                messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",
+        else:
+            messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",
                                        parent=self)
+        print(buton.winfo_width(), buton.winfo_height())
 
-            if self.jeutab.estceegalite(self.jeutab.grostictac):
-                self.fin("Egalite")
-            if self.jeutab.gagnegros():
-                self.jeutab.changejoueur()
-                self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+        if self.jeutab.estceegalite(self.jeutab.grostictac):
+            self.fin("Egalite")
+        if self.jeutab.gagnegros():
+            self.jeutab.changejoueur()
+            self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
 
     def tourdejeu(self, mouv):
@@ -461,7 +466,7 @@ class MultijoueurPokemon(Tk):
 
 
 
-def jouer():
+def jouer(): #probleme pokeballs changent dimensions frames quand il y en a 3 en ligne
     tableau = Menujeu("513x513")
     tableau.mainloop()
 
