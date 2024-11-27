@@ -172,7 +172,7 @@ class Multijoueur(Tk):
         options.add_command(label="Revenir au Menu", command=lambda: self.revenirmenu())
         options.add_separator()
         options.add_command(label="Rejouer", command=lambda: self.rejouer())
-        self.config(menu=barre)
+        self.config(menu=barre) #ajouter nouvelle command qui renvoie vers instructions
 
         for h in self.postofrm:
             self.creertictac(h)
@@ -418,6 +418,15 @@ class MultijoueurPokemon(Tk):
         fen.destroy()
         self.focus()
 
+    def combatsimple(self, poke1, poke2): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
+        pass #calcul damage comme dans page web
+
+    def combatcomplet(self):
+        pass
+
+    def coeffcombat(self):
+        pass
+
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
@@ -444,10 +453,6 @@ class MultijoueurPokemon(Tk):
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
             i.config(text="", bg = self.jeutab.quijoue[2], image="")
-
-    def combat(self): #, poke1, poke2 #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
-        pass
-
 
     def fin(self, queltype):
         self.txt.set(queltype)
@@ -477,12 +482,10 @@ class MultijoueurPokemon(Tk):
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
 
-
-
-def jouer(): #probleme pokeballs changent dimensions frames quand il y en a 3 en ligne
+def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
+                                        #ainsi pouvoir faire plus facilement les algos de résolution
     tableau = Menujeu("513x513")
     tableau.mainloop()
-
 
 if __name__ == "__main__":
     jouer()
