@@ -1,11 +1,35 @@
 from tkinter import *
 from itertools import cycle
+from tkinter import messagebox
+from tkinter import font as tkFont
 from tabulate import tabulate
+
+class Menujeu(Tk):
+    def __init__(self, geometria):
+        super().__init__()
+        self.title("SuperTicTacToe")
+        self.geometria = geometria
+        self.menu()
+
+    def menu(self):
+        menu = Frame(self)
+        menu.pack()
+        Label(menu, text="SuperTicTacToe").pack()
+        Button(menu, text='Multijoueur', command=lambda: self.allerau('jeu')).pack()
+        Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
+        Button(menu, text='Quitter', command=self.quit).pack()
+
+    def allerau(self, enquoi):
+        self.destroy()
+        if enquoi == 'jeu':
+            Multijoueur(self.geometria)
+        elif enquoi == 'pokemon':
+            MultijoueurPokemon(self.geometria)
 
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red"), ("O", "blue"))
+        self.joueurs = (("X", "red", "indianred"), ("O", "blue", "lightblue"))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
@@ -29,13 +53,12 @@ class Jeutab:
         elif self.grostictac[mouvement[1]] != "":
             self.queltictac = None
 
-
     def mouvpossible(self, mouvement): #regarder su mouvement est possible et regarder si le mouvement est sur le bon tiktak / mouvement serait surement des coordonnées (grosframe,petitframe)
         if (self.fin == False and (self.queltictac is None or self.queltictac == mouvement[0])
                 and self.grostictac[mouvement[0]] == "" and self.tableau[mouvement[0]][mouvement[1]] == ""):
             return True
         else:
-            print("Imp")
+            print("NON")
             return False
 
     def fairemouvement(self, mouvement): #faire mouvement dans tableau si possible
@@ -51,7 +74,6 @@ class Jeutab:
 
             self.quijoue = next(self.ordre)
             self.changetictac(mouvement)
-            self.printTableau()
 
     def gagnepetit(self, tictac): #regarder si dans le tableau il y a des gagnants, tictac c'est quel tableau des petits
         for i in self.gagne:
@@ -63,12 +85,14 @@ class Jeutab:
         for i in self.gagne:
             if self.grostictac[i[0]] == self.grostictac[i[1]] == self.grostictac[i[2]] != "":
                 self.gagnetot(self.grostictac[i[0]])
+                return True
         if self.estceegalite(self.grostictac) and self.fin == False: self.egalite()
-
+        return False
 
     def gagnetot(self, signe): #le gros tictactoe est gagné et il faut donner qui a gagné
         self.fin = True
         self.gagnant = signe
+        print(self.gagnant)
 
     def estceegalite(self, tictac): #regarder si il y a egalite / tictac c'est directement le tableau
         cpt = 0
@@ -82,45 +106,30 @@ class Jeutab:
     def egalite(self): #fin si egalite
         self.fin = True
         self.gagnant = "Aucun des deux"
+        print(self.gagnant)
 
     def rejouer(self): # remettre tout à zero pour rejouer
         self.fin = False
         self.gagnant = ""
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}
         self.grostictac = ["" for i in range(9)]
+        self.queltictac = None
+        self.ordre = cycle(self.joueurs)  # ordre des joueurs
+        self.quijoue = next(self.ordre)  # a qui le tour
 
 
-class Menujeu(Tk):
-    def __init__(self, geometria):
-        super().__init__()
-        self.title("SuperTicTacToe")
-        self.geometria = geometria
-        self.menu()
-
-    def menu(self):
-        menu = Frame(self)
-        menu.pack()
-        Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Jouer', command=lambda: self.alleraujeu('jeu')).pack()
-        Button(menu, text='Quitter', command=self.quit).pack()
-
-    def alleraujeu(self, enquoi):
-        self.destroy()
-        Jeu(self.geometria)
-
-
-
-
-class Jeu(Tk, Jeutab):
+class Multijoueur(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
         self.jeutab = Jeutab()
 
         self.title("Multijoueur")
         self.geometria = tuple(map(int, geometria.split("x"))) #dimensions fenetre
+        self.resizable(width=False, height=False)
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4] #pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"] #pour stick frames
+        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
 
         self.txt = StringVar()
         self.label = None
@@ -142,10 +151,9 @@ class Jeu(Tk, Jeutab):
             self.rowconfigure(i, weight=1)
 
         for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
-            f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
+            f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
             f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
             self.postofrm.append(f)
-        print(self.postofrm)
 
         barre = Menu(self)
         options = Menu(barre, tearoff=0, activebackground="grey", activeforeground= "red")
@@ -160,58 +168,157 @@ class Jeu(Tk, Jeutab):
 
         self.rowconfigure(3, weight=3)
 
-        f = Frame(self, background="white", highlightbackground="grey", highlightthickness=2)
+        f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
         f.grid(row=3, column=1)
         self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
-        self.label = Label(f, text= "Tour de: ", textvariable=self.txt, font=40)
+        self.label = Label(f, textvariable=self.txt, font=self.font)
         self.label.pack(side=BOTTOM)
 
     def creertictac(self, frame): #créer petits tiktaktoes
         for p in range(len(self.positionspossibles)):
             b = Button(frame, borderwidth = 1, background="white", foreground="black")
-            b.config(command = lambda a=b: self.creerxo(a))
+            b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width)) #une autre option serait de utiliser bind
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2, sticky="nsew")
-            b.config(height =int(self.height), width =int(self.width))
             self.butons[b] = (self.postofrm.index(frame), p)
 
     def creerxo(self, bouton): #creer croix ou ronds
         pos = self.butons[bouton]
-        if self.jeutab.mouvpossible(pos):
+
+        if self.jeutab.fin:
+            pass
+        elif self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
             bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
-            print(self.nametowidget(bouton.winfo_parent()))
-            self.tourdejeu(self.nametowidget(bouton.winfo_parent()), pos)
+            self.tourdejeu(pos)
         else:
-            self.txt.set("Réessaye")
+            messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
 
-    def tourdejeu(self, frame, mouv):
-        posfrm = self.postofrm.index(frame)
+        if self.jeutab.estceegalite(self.jeutab.grostictac):
+            self.fin("Egalite")
+        if self.jeutab.gagnegros():
+            self.jeutab.changejoueur()
+            self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+
+    def tourdejeu(self, mouv):
+
+        posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
 
-        if self.jeutab.estceegalite(tabfrm):
-            self.grostictac[posfrm] = "Imp"
-            if self.jeutab.estceegalite(self.postofrm):
-                self.fin("Egalite")
+        if self.jeutab.gagnepetit(posfrm):
+            self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
+            f = self.postofrm[posfrm]
+            self.actualiserfrm(f)
 
-        elif self.jeutab.gagnepetit(posfrm):
-            self.grostictac[posfrm] = self.jeutab.quijoue[0]
-            if self.jeutab.gagnegros():
-                self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+        elif self.jeutab.estceegalite(tabfrm):
+            self.jeutab.grostictac[posfrm] = "XO"
+            for i in self.postofrm[mouv[0]].winfo_children():
+                i.config(text="", bg="black")
+
 
         self.jeutab.changejoueur()
+        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.changetictac(mouv)
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[1]].config(highlightbackground="brown", highlightthickness=2)
+
+    def actualiserfrm(self, frm):
+        for i in frm.winfo_children():
+            i.config(text="", bg = self.jeutab.quijoue[2])
 
     def fin(self, queltype):
         self.txt.set(queltype)
-        self.jeutab.gagnetot("Aucun")
+        self.jeutab.gagnetot(queltype)
+        rootsecond = Toplevel()
+        rootsecond.title("Cela est un message de fin")
+
+        lab = Label(rootsecond, background="white", text = f"FIN DU JEU \n {queltype} \n Vous pouvez rejouer...\n si vous le souhaitez.", font = self.font)
+        lab.pack(side=TOP)
+        but = Button(rootsecond, text="Revenir au Jeu", fg="white", bg="black", command=rootsecond.destroy)
+        but.pack(side=BOTTOM)
+        rootsecond.focus()
 
     def rejouer(self): #tout remettre en place pour jouer
-        pass
-        # remettre à zero tous les elements de tableau
+        for i in self.postofrm:
+            for j in i.winfo_children():
+                j.config(text="", bg = "white")
+        self.txt.set("Prets?")
+        if self.jeutab.queltictac is not None:
+            self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
+        self.jeutab.rejouer()
 
     def revenirmenu(self):
+        for i in self.winfo_children():
+            i.destroy()
         self.destroy()
-        Menujeu(self.geometria)
+        self.jeutab.rejouer()
+        Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
+
+class MultijoueurPokemon(Tk):
+    def __init__(self, geometria):
+        Tk.__init__(self)
+        self.jeutab = Jeutab()
+
+        self.title("Multijoueur pokemon")
+        self.geometria = tuple(map(int, geometria.split("x")))  # dimensions fenetre
+        self.resizable(width=False, height=False)
+
+        self.positionspossibles = [(i, j) for i in range(3) for j in range(3) if i + j <= 4]  # pour affichage frames
+        self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"]  # pour stick frames
+        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
+
+        self.txt = StringVar()
+        self.label = None
+
+        self.height = round(int(self.geometria[0]) / 83) / 2
+        self.width = round(int(self.geometria[0]) / 83)
+
+        print(dir(self))
+
+        self.postofrm = []
+        self.butons = {}
+
+        #pokemons de chaque equipe en les creant avec fonction eina
+        self.equiperouge = None
+        self.equipebleu = None
+
+    def initialisationgraph(self):
+        for i in range(3):
+            self.columnconfigure(i, weight=1)
+            self.rowconfigure(i, weight=1)
+
+        for p in range(len(self.positionspossibles)): #creer les frames qui vont contenir tictactoes
+            f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=3, pady=3)
+            self.postofrm.append(f)
+
+        barre = Menu(self)
+        options = Menu(barre, tearoff=0, activebackground="grey", activeforeground= "red")
+        barre.add_cascade(label="| Options |", menu=options)
+        options.add_command(label="Revenir au Menu", command=lambda: self.revenirmenu())
+        options.add_separator()
+        options.add_command(label="Rejouer", command=lambda: self.rejouer())
+        self.config(menu=barre)
+
+        # creer tictacs mais en appelant une autre fonction qui creer pokemons
+
+        self.rowconfigure(3, weight=3)
+
+        f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
+        f.grid(row=3, column=1)
+        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+        self.label = Label(f, textvariable=self.txt, font=self.font)
+        self.label.pack(side=BOTTOM)
+
+
+    def mouvement(self): #si il n'y a aucun pokemon je le mets sinon combat
+        pass
+
+    def combat(self):
+        pass
+
 
 
 def jouer():
