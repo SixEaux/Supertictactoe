@@ -1,8 +1,9 @@
-from random import uniform
 from tkinter import *
 from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
+from tkinter.ttk import Combobox
+
 from tabulate import tabulate
 import pandas as pd
 from PIL import Image, ImageTk
@@ -298,6 +299,8 @@ class MultijoueurPokemon(Tk):
 
         self.pokemonutilise = {i : ["" for j in range(9)] for i in range(9)} #pokemons qui ont été utilises
 
+        self.choixpoke = None
+
         self.initialisationgraph()
 
     def initialisationgraph(self):
@@ -373,23 +376,21 @@ class MultijoueurPokemon(Tk):
             pass
         elif self.jeutab.mouvpossiblepoke(mouv):
             if self.jeutab.tableau[mouv[0]][mouv[1]] == "":
-                pok = self.choixpokemon() #ouvrir fenetre pour choisir pokemon
-
+                self.choixpokemon()
                 self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
-                self.pokemonutilise[mouv[0]][mouv[1]] = pok
+                self.pokemonutilise[mouv[0]][mouv[1]] = self.choixpoke
                 buton.config(image=self.jeutab.quijoue[3])
                 self.tourdejeu(mouv)
 
             elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.quijoue[0]:
-                pok = self.choixpokemon()
+                self.choixpokemon()
                 combat = self.combat()
-
                 if combat == self.jeutab.tableau[mouv[0]][mouv[1]]:
                     self.tourdejeu(mouv) #on garde le pokemon qui avait avant
 
                 elif combat == self.jeutab.quijoue[0]:
                     self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
-                    self.pokemonutilise[mouv[0]][mouv[1]] = pok
+                    self.pokemonutilise[mouv[0]][mouv[1]] = self.choixpoke
                     buton.config(image=self.jeutab.quijoue[3])
                     self.tourdejeu(mouv)
 
@@ -403,6 +404,19 @@ class MultijoueurPokemon(Tk):
             self.jeutab.changejoueur()
             self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
+    def choixpokemon(self): #choix pokemon et l'enlever des pokemons dispo
+        top = Toplevel(self)
+        print(self.jeutab.quijoue[0], self.equipes[self.jeutab.quijoue[0]])
+        choixpoke = Combobox(top, values=self.equipes[self.jeutab.quijoue[0]], state="readonly")
+        choixpoke.pack()
+        boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top))
+        boton.pack()
+        top.focus()
+
+    def choisi(self, objchoix, fen):
+        self.choixpoke = objchoix.get()
+        fen.destroy()
+        self.focus()
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
@@ -434,8 +448,6 @@ class MultijoueurPokemon(Tk):
     def combat(self): #, poke1, poke2 #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
         pass
 
-    def choixpokemon(self): #choix pokemon et l'enlever des pokemons dispo
-        pass
 
     def fin(self, queltype):
         self.txt.set(queltype)
