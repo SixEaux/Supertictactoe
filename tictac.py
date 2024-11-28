@@ -1,6 +1,5 @@
 from tkinter import *
-
-
+import random
 class Jeu:
     def __init__(self, root, geometria):
 
@@ -8,6 +7,7 @@ class Jeu:
         self.root.resizable(0, 0)
         self.root.title("SuperTicTacToe")
         self.root.geometry(geometria)
+        self.geometry=(geometria[:3],geometria[4:])
         self.frames = {} # tous les ojets graphiques de frames avec en cle la position dans le tableau (1,1) , (1,2) ...
         self.tableau = {} # code du tableau c'est 11,12,13,14...
         self.obj = {i : [] for i in range(9)}
@@ -22,8 +22,7 @@ class Jeu:
         self.root.rowconfigure(1, weight=1)
         self.root.rowconfigure(2, weight=1)
         self.initialisationgraph()
-
-
+        self.signe=True
 
 
 
@@ -32,36 +31,35 @@ class Jeu:
             f = Frame(self.root, background="white")
             self.tableau[p] = {}
             self.frames[p] = f
-            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0) #, highlightbackground="blue", highlightthickness=1
+            f.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], sticky=self.nseo[p], padx=0, pady=0, command=lambda b=Button, f=f, p=p: self.button_click(b, f, self.signe, p))
 
         for h in range(9):
             self.creertictac(h)
 
-    def creertictac(self, numpos):
-        for p in range(len(self.positionspossibles)):
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0, ipadx = 0, ipady = 0)
-            b = Button(self.frames[numpos], borderwidth = 1, background="white", foreground="black")
-            b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=0, pady=0)
+    def isfree(self,i,list):
+        if list[i]=="":
+            return(True)
+    def winnersmallAI(self):
+        for i in range(0, 10):
+            if isfree(i,list):
+                if iswinner(i,"O"):
+                    return(i)
+        for i in range(0, 10):
+            if isfree(i,list):
+                if iswinner(i,"X"):
+                    return(i)
+        move = chooseRandomMoveFromList([1, 3, 7, 9])
+        if move != None and isfree(self,move,list):
+          return move
+        if isfree(5,list):
+            return(5)
+        return chooseRandomMoveFromList([2, 4, 6, 8])
 
-            height=round(int(self.geometry[0])/83)/2
-            width=round(int(self.geometry[0])/83)
-            print(height, width)
-            b.config( height =int(height), width =int(width) )
-
-            self.obj[numpos].append((p, b))
 
 
-    def ptitictac(self):
-        pass
 
-    def placement(self, figure, pos):
-        pass
-
-    def creerxo(self, signe):
-        pass
 
 
 root = Tk()
-g = Jeu(root, "450x450")
+g = Jeu(root, "500x500")
 root.mainloop()
