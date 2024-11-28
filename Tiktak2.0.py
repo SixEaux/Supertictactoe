@@ -140,7 +140,7 @@ class Multijoueur(Tk):
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4] #pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"] #pour stick frames
-        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
+        self.font = tkFont.Font(family='Helvetica', size=9, weight=tkFont.BOLD)
 
         self.txt = StringVar()
         self.label = None
@@ -201,7 +201,7 @@ class Multijoueur(Tk):
             pass
         elif self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
-            bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
+            bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1], font=self.font)
             self.tourdejeu(pos)
         else:
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
