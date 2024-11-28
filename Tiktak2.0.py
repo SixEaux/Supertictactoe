@@ -3,10 +3,10 @@ from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 from tkinter.ttk import Combobox
-
+import random
 from tabulate import tabulate
 import pandas as pd
-
+from PIL import Image, ImageTk
 
 class Menujeu(Tk):
     def __init__(self, geometria):
@@ -33,9 +33,8 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        #self.joueurs = ("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))
-        self.joueurs = ("X", "red", "indianred"), ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))
-
+        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
+                        ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15)))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
@@ -73,20 +72,6 @@ class Jeutab:
             return True
         else:
             return False
-
-    def fairemouvement(self, mouvement): #faire mouvement dans tableau si possible
-        if  self.mouvpossible(mouvement):
-            self.tableau[mouvement[0]][mouvement[1]] = self.quijoue[0]
-            if self.gagnepetit(mouvement[0]):
-                self.grostictac[mouvement[0]] = self.quijoue[0]
-                self.gagnegros()
-            elif self.estceegalite(self.tableau[mouvement[0]]):
-                self.grostictac[mouvement[0]] = "Imp"
-                if self.estceegalite(self.grostictac):
-                    self.egalite()
-
-            self.quijoue = next(self.ordre)
-            self.changetictac(mouvement)
 
     def gagnepetit(self, tictac): #regarder si dans le tableau il y a des gagnants, tictac c'est quel tableau des petits
         for i in self.gagne:
@@ -131,6 +116,10 @@ class Jeutab:
         self.quijoue = next(self.ordre)  # a qui le tour
 
 
+class JeutabPokemon:
+    def __init__(self):
+        pass
+
 class Multijoueur(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
@@ -142,7 +131,7 @@ class Multijoueur(Tk):
 
         self.positionspossibles = [(i,j) for i in range(3) for j in range(3) if i+j<=4] #pour affichage frames
         self.nseo = ["NW", "N", "NE", "W", None, "E", "SW", "S", "SE"] #pour stick frames
-        self.font = tkFont.Font(family='Helvetica', size=20, weight=tkFont.BOLD)
+        self.font = tkFont.Font(family='Helvetica', size=9, weight=tkFont.BOLD)
 
         self.txt = StringVar()
         self.label = None
@@ -203,7 +192,7 @@ class Multijoueur(Tk):
             pass
         elif self.jeutab.mouvpossible(pos):
             self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
-            bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1])
+            bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1], font=self.font)
             self.tourdejeu(pos)
         else:
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
@@ -279,7 +268,7 @@ class Multijoueur(Tk):
         self.destroy()
         self.jeutab.rejouer()
         Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
-"""
+
 class MultijoueurPokemon(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
@@ -311,6 +300,8 @@ class MultijoueurPokemon(Tk):
         self.pokemonutilise = {i : ["" for j in range(9)] for i in range(9)} #pokemons qui ont été utilises
 
         self.choixpoke = None
+
+        self.boolinutile = False
 
         self.initialisationgraph()
 
@@ -387,16 +378,12 @@ class MultijoueurPokemon(Tk):
             pass
         elif self.jeutab.mouvpossiblepoke(mouv):
             if self.jeutab.tableau[mouv[0]][mouv[1]] == "":
-                self.choixpokemon()
-                self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
-                self.pokemonutilise[mouv[0]][mouv[1]] = self.choixpoke
-                buton.config(image=self.jeutab.quijoue[3])
-                self.tourdejeu(mouv)
+                self.choixpokemon(buton, mouv)
 
-            elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.quijoue[0]:
-                self.choixpokemon()
-                combat = self.combat()
-                if combat == self.jeutab.tableau[mouv[0]][mouv[1]]:
+            elif self.jeutab.tableau[mouv[0]][mouv[1]] == next(self.jeutab.ordre)[0]:
+                self.choixpokemon(buton, mouv)
+                combat = self.combatsimple(mouv)
+                if combat == next(self.jeutab.ordre)[0]:
                     self.tourdejeu(mouv) #on garde le pokemon qui avait avant
 
                 elif combat == self.jeutab.quijoue[0]:
@@ -415,22 +402,35 @@ class MultijoueurPokemon(Tk):
             self.jeutab.changejoueur()
             self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
-    def choixpokemon(self): #choix pokemon et l'enlever des pokemons dispo
+    def choixpokemon(self, buton, mouv): #choix pokemon et l'enlever des pokemons dispo
         top = Toplevel(self)
         print(self.jeutab.quijoue[0], self.equipes[self.jeutab.quijoue[0]])
-        choixpoke = Combobox(top, values=self.equipes[self.jeutab.quijoue[0]], state="readonly")
+        choixpoke = Combobox(top, values=self.equipes[self.jeutab.quijoue[0]], state="focus")
         choixpoke.pack()
-        boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top))
+        boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
         boton.pack()
         top.focus()
 
-    def choisi(self, objchoix, fen):
+    def choisi(self, objchoix, fen, buton, mouv):
         self.choixpoke = objchoix.get()
-        fen.destroy()
-        self.focus()
+        if self.choixpoke != "":
+            self.apreschoix(buton, mouv)
+            fen.destroy()
+            self.focus()
+            return
+        else:
+            return
 
-    def combatsimple(self, poke1, poke2): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
-        pass #calcul damage comme dans page web
+    def apreschoix(self, buton, mouv):
+        self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.quijoue[0]
+        self.pokemonutilise[mouv[0]][mouv[1]] = self.choixpoke
+        self.equipes[self.jeutab.quijoue[0]].remove(self.choixpoke)
+        buton.config(image=self.jeutab.quijoue[3])
+        self.tourdejeu(mouv)
+        return
+
+    def combatsimple(self, mouv): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
+        return random.choice([self.pokemonutilise[mouv[0]][mouv[1]], self.choixpoke])
 
     def combatcomplet(self):
         pass
@@ -492,7 +492,7 @@ class MultijoueurPokemon(Tk):
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
-"""
+
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
                                         #ainsi pouvoir faire plus facilement les algos de résolution
     tableau = Menujeu("513x513")
