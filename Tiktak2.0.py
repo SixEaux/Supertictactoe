@@ -33,7 +33,7 @@ class Jeutab:
         self.joueurs = (("X", "red", "indianred"), ("O", "blue", "lightblue"))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
-        self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
+        self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i : ["" for j in range(9)] for i in range(9)} #tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
         self.grostictac = ["" for i in range(9)] #chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
