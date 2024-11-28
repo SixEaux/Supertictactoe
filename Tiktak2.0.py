@@ -6,7 +6,7 @@ from tkinter.ttk import Combobox
 
 from tabulate import tabulate
 import pandas as pd
-from PIL import Image, ImageTk
+
 
 class Menujeu(Tk):
     def __init__(self, geometria):
@@ -33,7 +33,9 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = ("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))
+        #self.joueurs = ("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)), ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))
+        self.joueurs = ("X", "red", "indianred"), ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))
+
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
@@ -233,9 +235,18 @@ class Multijoueur(Tk):
 
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
+
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
@@ -268,7 +279,7 @@ class Multijoueur(Tk):
         self.destroy()
         self.jeutab.rejouer()
         Menujeu(f"{self.geometria[0]}x{self.geometria[1]}")
-
+"""
 class MultijoueurPokemon(Tk):
     def __init__(self, geometria):
         Tk.__init__(self)
@@ -481,7 +492,7 @@ class MultijoueurPokemon(Tk):
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
-
+"""
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
                                         #ainsi pouvoir faire plus facilement les algos de résolution
     tableau = Menujeu("513x513")
