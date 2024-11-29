@@ -6,6 +6,8 @@ from tkinter.ttk import Combobox
 import random
 from tabulate import tabulate
 import pandas as pd
+
+from tkinter import Toplevel
 from PIL import Image, ImageTk
 
 class Menujeu(Tk):
@@ -33,8 +35,8 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
-                        ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15)))
+        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
+                        ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15)))
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
@@ -294,6 +296,8 @@ class MultijoueurPokemon(Tk):
         self.butons = {}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
+        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"{nom.lower()}.png")
+
         a,b = self.selectionner_pokemon(60)
         self.equipes = {"X":a, "O":b}
 
@@ -403,13 +407,36 @@ class MultijoueurPokemon(Tk):
             self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
 
     def choixpokemon(self, buton, mouv): #choix pokemon et l'enlever des pokemons dispo
-        top = Toplevel(self)
+        """top = Toplevel(self)
         print(self.jeutab.quijoue[0], self.equipes[self.jeutab.quijoue[0]])
         choixpoke = Combobox(top, values=self.equipes[self.jeutab.quijoue[0]], state="focus")
         choixpoke.pack()
         boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
         boton.pack()
         top.focus()
+"""
+        fenetre_pokemons = Toplevel(self)
+        fenetre_pokemons.title("Liste des Pokémon")
+        fenetre_pokemons.geometry("500x500")
+
+        #label = self.Label(fenetre_pokemons, text="Choisissez un Pokémon :", font=("Arial", 14))
+        #label.pack(pady=10)
+
+        # Afficher les boutons avec les images
+        for pokemon in self.equipes[self.jeutab.quijoue[0]]:
+            # Charger l'image du Pokémon
+            image = Image.open(self.pokedex[pokemon]["Image"]).resize((80, 80))  # Redimensionner l'image
+            photo = ImageTk.PhotoImage(image)
+
+            # Créer un bouton avec l'image et le nom
+            bouton = self.Button(
+                fenetre_pokemons,
+                text=pokemon,
+                image=photo,
+                compound="top",  # Afficher le texte sous l'image
+                font=("Arial", 10))
+            bouton.image = photo  # Stocker une référence pour éviter le garbage collection
+            bouton.pack(pady=5)
 
     def choisi(self, objchoix, fen, buton, mouv):
         self.choixpoke = objchoix.get()
