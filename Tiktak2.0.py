@@ -67,6 +67,20 @@ class Jeutab:
             print("NON")
             return False
 
+    def fairemouvement(self, mouvement):  # faire mouvement dans tableau si possible
+        if self.mouvpossible(mouvement):
+            self.tableau[mouvement[0]][mouvement[1]] = self.quijoue[0]
+            if self.gagnepetit(mouvement[0]):
+                self.grostictac[mouvement[0]] = self.quijoue[0]
+                self.gagnegros()
+            elif self.estceegalite(self.tableau[mouvement[0]]):
+                self.grostictac[mouvement[0]] = "Imp"
+                if self.estceegalite(self.grostictac):
+                    self.egalite()
+
+            self.quijoue = next(self.ordre)
+            self.changetictac(mouvement)
+
     def gagnepetit(self, tictac): #regarder si dans le tableau il y a des gagnants, tictac c'est quel tableau des petits
         for i in self.gagne:
             if self.tableau[tictac][i[0]] == self.tableau[tictac][i[1]] == self.tableau[tictac][i[2]] != "":
@@ -149,6 +163,30 @@ class JeutabPokemon:
             return True
         else:
             return False
+
+    # def fairemouvement(self, mouvement): #a finir pour l'IA
+    #     if self.fin:
+    #         pass
+    #     elif  self.mouvpossiblepoke(mouvement):
+    #         combat = self.combatsimple(mouvement)
+    #         if combat ==
+    #         self.tableau[mouvement[0]][mouvement[1]] = self.quijoue[0]
+    #         if self.gagnepetit(mouvement[0]):
+    #             self.grostictac[mouvement[0]] = self.quijoue[0]
+    #             self.gagnegros()
+    #         elif self.estceegalite(self.tableau[mouvement[0]]):
+    #             self.grostictac[mouvement[0]] = "Imp"
+    #             if self.estceegalite(self.grostictac):
+    #                 self.egalite()
+    #
+    #         self.quijoue = not self.quijoue
+    #         self.changetictac(mouvement)
+
+    def combatsimple(self, mouv): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
+        return random.choice(["X", "O"])
+
+    def combatcomplet(self):
+        pass
 
     def changetictac(self, mouvement):
         if self.grostictac[mouvement[1]] == "":
@@ -454,12 +492,11 @@ class MultijoueurPokemon(Tk):
                 else:
                     self.txt.set("NOON")
 
-
             elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.joueurs[not self.jeutab.quijoue][0]:
                 top = Toplevel(self)
                 self.choixpokemon(buton, mouv, top)
                 self.wait_window(top)
-                combat = self.combatsimple(mouv)
+                combat = self.jeutab.combatsimple(mouv)
                 print(combat, self.jeutab.choixpoke)
                 if combat == self.jeutab.joueurs[not self.jeutab.quijoue][0]:
                     self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.joueurs[self.jeutab.quijoue][0]
@@ -514,12 +551,6 @@ class MultijoueurPokemon(Tk):
         buton.config(image=self.jeutab.joueurs[self.jeutab.quijoue][3])
         self.tourdejeu(mouv)
         return
-
-    def combatsimple(self, mouv): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
-        return random.choice(["X", "O"])
-
-    def combatcomplet(self):
-        pass
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
