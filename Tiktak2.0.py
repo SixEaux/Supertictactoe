@@ -185,8 +185,39 @@ class JeutabPokemon:
     def combatsimple(self, mouv): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
         return random.choice(["X", "O"])
 
-    def combatcomplet(self):
-        pass
+    def compare_pokemon(self, mouv):
+        pokemon1 = self.pokemonutilise[mouv[0]][mouv[1]]
+        pokemon2 = self.choixpoke
+
+        weights = {
+            "Total": 2.0,
+            "HP": 1.3,
+            "Attack": 1.5,
+            "Defense": 1.5,
+            "Sp. Atk": 1.2,
+            "Sp. Def": 1.2,
+            "Speed": 1.0
+        }
+
+        score1 = 0
+        score2 = 0
+
+        for stat, weight in weights.items():
+            stat1 = self.pokedex[stat][pokemon1]
+            stat2 = self.pokedex[stat][pokemon2]
+
+
+            if stat1 > stat2:
+                score1 += weight
+            elif stat2 > stat1:
+                score2 += weight
+
+        if score1 > score2:
+            return self.joueurs[not self.quijoue][0]
+        elif score2 > score1:
+            return self.joueurs[self.quijoue][0]
+        else:
+            return "Egalite"
 
     def changetictac(self, mouvement):
         if self.grostictac[mouvement[1]] == "":
@@ -496,7 +527,7 @@ class MultijoueurPokemon(Tk):
                 top = Toplevel(self)
                 self.choixpokemon(buton, mouv, top)
                 self.wait_window(top)
-                combat = self.jeutab.combatsimple(mouv)
+                combat = self.jeutab.compare_pokemon(mouv)
                 print(combat, self.jeutab.choixpoke)
                 if combat == self.jeutab.joueurs[not self.jeutab.quijoue][0]:
                     self.jeutab.tableau[mouv[0]][mouv[1]] = self.jeutab.joueurs[self.jeutab.quijoue][0]
@@ -512,6 +543,16 @@ class MultijoueurPokemon(Tk):
                     self.jeutab.pokemonutilise[mouv[0]][mouv[1]] = self.jeutab.choixpoke
                     buton.config(image="", text=self.jeutab.joueurs[self.jeutab.quijoue][0], fg=self.jeutab.joueurs[self.jeutab.quijoue][1])
                     self.tourdejeu(mouv)
+
+                elif combat=="Egalite":
+                    self.jeutab.tableau[mouv[0]][mouv[1]] = ""
+                    self.jeutab.equipes[self.jeutab.joueurs[not self.jeutab.quijoue][0]].append(self.jeutab.pokemonutilise[mouv[0]][mouv[1]])
+                    self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]].append(self.jeutab.choixpoke)
+                    buton.config(image="", text="")
+                    return
+
+                else:
+                    print("Je ne sais pas pourquoi")
 
             else:
                 messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",parent=self)
@@ -608,7 +649,6 @@ class MultijoueurPokemon(Tk):
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
-
 
 
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
