@@ -36,8 +36,8 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
-                        False : ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))}
+        self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
+                        False : ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))}
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
@@ -133,7 +133,7 @@ class JeutabPokemon:
 
         # self.ordre = cycle(self.joueurs)  # ordre des joueurs
         self.quijoue = True  # a qui le tour
-        self.queltictac = None  # ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
+        self.queltictac = None  # ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}  # tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
         self.grostictac = ["" for i in range(9)]  # chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
@@ -145,6 +145,7 @@ class JeutabPokemon:
         self.definitivementgagne = {i: ["" for j in range(9)] for i in range(9)}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
+        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset\{nom.lower()}.png")
 
         self.nbpokeparequipe = nbequipepoke
         a, b = self.selectionner_pokemon()
@@ -616,7 +617,7 @@ class MultijoueurPokemon(Tk):
         fenetre_pokemons.grab_set()  #empêche l'interaction avec les autres fenêtres
 
         joueur_actuel = self.jeutab.joueurs[self.jeutab.quijoue][0]
-        pokemons_dispo = self.equipes[joueur_actuel]
+        pokemons_dispo = self.jeutab.equipes[joueur_actuel]
         pages = [pokemons_dispo[i:i + 20] for i in range(0, len(pokemons_dispo), 20)]  #20 Pokémon par page (5x4)
         page_actuelle = [0]  #permet de suivre la page actuelle
         self.images_pokemon = []
@@ -630,10 +631,10 @@ class MultijoueurPokemon(Tk):
 
             ligne, colonne = 0, 0
             for pokemon in pages[page_num]:
-                image = Image.open(self.pokedex.loc[pokemon]["Image"]).resize((80, 80))
+                image = Image.open(self.jeutab.pokedex.loc[pokemon]["Image"]).resize((80, 80))
                 photo = ImageTk.PhotoImage(image)
                 self.images_pokemon.append(photo)
-                stats = self.pokedex.loc[pokemon][["HP", "Attack", "Defense"]]
+                stats = self.jeutab.pokedex.loc[pokemon][["HP", "Attack", "Defense"]]
                 stats_text = f"HP: {stats['HP']} | Attaque: {stats['Attack']} | Défense: {stats['Defense']}"
 
                 bouton = Button(frame_grille, text=f"{pokemon}\n{stats_text}", image=photo, compound="top",
