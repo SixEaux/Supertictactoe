@@ -575,40 +575,6 @@ class MultijoueurPokemon(Tk):
             self.fin("Egalite")
 
 
-    """def choixpokemon(self, buton, mouv, top): #choix pokemon et l'enlever des pokemons dispo
-        # print(self.jeutab.quijoue[0], self.jeutab.equipes[self.jeutab.quijoue[0]])
-       # choixpoke = Combobox(top, values=self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]], state="readonly")
-        #choixpoke.pack()
-        #boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
-        #boton.pack()
-        #top.focus()
-
-        fenetre_pokemons = top
-        fenetre_pokemons.title("Liste des Pokémon")
-        fenetre_pokemons.geometry("500x500")
-
-        #label = self.Label(fenetre_pokemons, text="Choisissez un Pokémon :", font=("Arial", 14))
-        #label.pack(pady=10)
-
-        # Afficher les boutons avec les images
-        for pokemon in self.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]]:
-            # Charger l'image du Pokémon
-            image = Image.open(self.pokedex.loc[pokemon]["Image"]).resize((80, 80))  # Redimensionner l'image
-            photo = ImageTk.PhotoImage(image)
-
-            # Créer un bouton avec l'image et le nom
-            bouton = Button(
-                fenetre_pokemons,
-                text=pokemon,
-                image=photo,
-                compound="top",  # Afficher le texte sous l'image
-                font=("Arial", 10))
-            bouton.image = photo  # Stocker une référence pour éviter le garbage collection
-            bouton.pack(pady=5)
-            boton = Button(top, text="Accepter", command=lambda a=bouton: self.choisi(a, top, buton, mouv))
-            boton.pack()
-            top.focus()"""
-
     def choixpokemon(self, buton, mouv, top):
         fenetre_pokemons = top
         fenetre_pokemons.title("Choisissez un Pokémon")
