@@ -3,7 +3,7 @@ from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 from tkinter.ttk import Combobox
-import random
+import copy
 from tabulate import tabulate
 import pandas as pd
 
@@ -644,15 +644,88 @@ class MultijoueurPokemon(Tk):
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
 
-class minimax(Jeutab):
-    def __init__(self):
+class Solutions(Jeutab):
+    def __init__(self, ordi, boolordi):
         super().__init__()
+        self.ordijoue = ordi #est-ce qu'il joue
+        self.ordi = boolordi #bool de ce qu'il joue
 
-    # def evaluposition(self, derniermouv, jeu):
-    #     if derniermouv is None:
-    #         return 0
-    #     else:
-    #         if
+    def evaluposition(self, derniermouv, jeu): #jeu serait un dico comme self.tableau mais d'une position qconque
+        if derniermouv is None:
+            return 0
+        else:
+            cles = jeu.keys()
+            for i in self.gagne:
+                if cles[i[0]] == cles[i[1]] == cles[i[2]] != "":
+                    if cles[i[0]] == self.joueurs[self.ordijoue][0]:
+                        return 100
+                    elif cles[i[0]] == self.joueurs[not self.ordijoue][0]:
+                        return -100
+
+            # tictac = derniermouv[1]
+            # for i in self.gagne:
+            #     if jeu[tictac][i[0]] == jeu[tictac][i[1]] == jeu[tictac][i[2]] != "":
+            #         if jeu[tictac][i[0]] == self.ordi:
+            #             return 10
+            #         elif jeu[tictac][i[0]] == self.autre:
+            #             return -10
+
+    def minimax(self, derniermouv, position, profondeur, aquitour):
+        ponctuation = self.evaluposition(derniermouv, position)
+
+        if ponctuation == 10:
+            return ponctuation
+
+        if ponctuation == -10:
+            return ponctuation
+
+        if self.estceegalite(position.keys()):
+            return 0
+
+        copiepos = position.deepcopy()
+
+        if self.ordijoue:
+            meilleur = -1000
+            vide = self.casesvides(position)
+            for case in vide:
+
+                copiepos[case[0]][case[1]] = self.joueurs[self.ordi][0]
+
+                meilleur = max(meilleur, self.minimax((case[0], case[1]), copiepos,profondeur+1, not self.ordijoue))
+
+                copiepos[case[0]][case[1]] = ""
+
+            return meilleur
+
+        elif not self.ordijoue:
+            meilleur = 1000
+            vide = self.casesvides(position)
+            for case in vide:
+                copiepos[case[0]][case[1]] = self.joueurs[not self.ordi][0]
+
+                meilleur = min(meilleur, self.minimax((case[0], case[1]), copiepos, profondeur + 1, not self.ordijoue))
+
+                copiepos[case[0]][case[1]] = ""
+
+            return meilleur
+
+        else:
+            print("OOOOPPPPS")
+
+
+
+    def casesvides(self, position):
+        vide = []
+        for i in range(9):
+            for j in range(9):
+                if position[i][j] == "":
+                    vide.append((i,j))
+
+        return vide
+
+
+
+
 
 
 
