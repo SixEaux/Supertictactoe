@@ -2,11 +2,12 @@ from tkinter import *
 from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
-from tkinter.ttk import Combobox
 import copy
 from tabulate import tabulate
 import pandas as pd
 
+from tkinter import Toplevel
+from PIL import Image, ImageTk
 
 class Menujeu(Tk):
     def __init__(self, geometria, nbpokeparequipe):
@@ -34,10 +35,11 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = {True : ("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
-                        False : ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))}
-        self.quijoue = True #a qui le tour
-        self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
+        self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
+                        False : ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))}
+        self.ordre = cycle(self.joueurs) #ordre des joueurs
+        self.quijoue = next(self.ordre) #a qui le tour
+        self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i : ["" for j in range(9)] for i in range(9)} #tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
         self.grostictac = ["" for i in range(9)] #chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
@@ -125,12 +127,12 @@ class Jeutab:
 
 class JeutabPokemon:
     def __init__(self, nbequipepoke):
-        self.joueurs = {True : ("X", "red", "indianred",PhotoImage(file=r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
-                        False : ("O", "blue", "lightblue",PhotoImage(file=r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))}
+        self.joueurs = {True : ("X", "red", "indianred",PhotoImage(file=r"Pokeball_rouge.png").subsample(15, 15)),
+                        False : ("O", "blue", "lightblue",PhotoImage(file=r"Pokeball_bleu.png").subsample(15, 15))}
 
         # self.ordre = cycle(self.joueurs)  # ordre des joueurs
         self.quijoue = True  # a qui le tour
-        self.queltictac = None  # ou est-ce que il faut jouer/ si None alors tu peuc jouer nimporte ou
+        self.queltictac = None  # ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}  # tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
         self.grostictac = ["" for i in range(9)]  # chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
@@ -142,6 +144,7 @@ class JeutabPokemon:
         self.definitivementgagne = {i: ["" for j in range(9)] for i in range(9)}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
+        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset\{nom.lower()}.png")
 
         self.nbpokeparequipe = nbequipepoke
         a, b = self.selectionner_pokemon()
@@ -401,9 +404,18 @@ class Multijoueur(Tk):
 
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
@@ -562,13 +574,66 @@ class MultijoueurPokemon(Tk):
             self.fin("Egalite")
 
 
-    def choixpokemon(self, buton, mouv, top): #choix pokemon et l'enlever des pokemons dispo
-        # print(self.jeutab.quijoue[0], self.jeutab.equipes[self.jeutab.quijoue[0]])
-        choixpoke = Combobox(top, values=self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]], state="readonly")
-        choixpoke.pack()
-        boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
-        boton.pack()
-        top.focus()
+    def choixpokemon(self, buton, mouv, top):
+        fenetre_pokemons = top
+        fenetre_pokemons.title("Choisissez un Pokémon")
+        fenetre_pokemons.geometry("713x613")
+
+        fenetre_pokemons.grab_set()  #empêche l'interaction avec les autres fenêtres
+
+        joueur_actuel = self.jeutab.joueurs[self.jeutab.quijoue][0]
+        pokemons_dispo = self.jeutab.equipes[joueur_actuel]
+        pages = [pokemons_dispo[i:i + 20] for i in range(0, len(pokemons_dispo), 20)]  #20 Pokémon par page (5x4)
+        page_actuelle = [0]  #permet de suivre la page actuelle
+        self.images_pokemon = []
+
+        def afficher_page(page_num):
+            for widget in fenetre_pokemons.winfo_children():
+                widget.destroy()
+
+            frame_grille = Frame(fenetre_pokemons)
+            frame_grille.pack(expand=True, fill="both", padx=10, pady=10)
+
+            ligne, colonne = 0, 0
+            for pokemon in pages[page_num]:
+                image = Image.open(self.jeutab.pokedex.loc[pokemon]["Image"]).resize((80, 80))
+                photo = ImageTk.PhotoImage(image)
+                self.images_pokemon.append(photo)
+                stats = self.jeutab.pokedex.loc[pokemon][["HP", "Attack", "Defense"]]
+                stats_text = f"HP: {stats['HP']} | Attaque: {stats['Attack']} | Défense: {stats['Defense']}"
+
+                bouton = Button(frame_grille, text=f"{pokemon}\n{stats_text}", image=photo, compound="top",
+                                command=lambda p=pokemon: self.choisir_pokemon(fenetre_pokemons, p),
+                                width=120, height=120, wraplength=120)
+                bouton.grid(row=ligne, column=colonne, padx=5, pady=5)
+
+                colonne += 1
+                if colonne == 5:
+                    colonne = 0
+                    ligne += 1
+
+
+            tourner_page = Frame(fenetre_pokemons)
+            tourner_page.pack(pady=5)  #placer directement sous la grille
+
+            if page_num > 0:
+                Button(tourner_page, text="Page précédente",
+                       command=lambda: afficher_page(page_num - 1),
+                       width=15).pack(side="left", padx=10)
+
+            if page_num < len(pages) - 1:
+                Button(tourner_page, text="Page suivante",
+                       command=lambda: afficher_page(page_num + 1),
+                       width=15).pack(side="right", padx=10)
+        afficher_page(page_actuelle[0]) #afficher la première page
+
+    def choisir_pokemon(self, fen, pokemon):
+        self.jeutab.choixpoke = pokemon
+        print(f"Pokémon choisi : {pokemon}")
+        fen.destroy()
+
+
+
 
     def choisi(self, objchoix, fen, buton, mouv):
         self.jeutab.choixpoke = objchoix.get()
@@ -735,7 +800,7 @@ class JouerSeulGraph(Multijoueur):
 
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
                                         #ainsi pouvoir faire plus facilement les algos de résolution
-    tableau = Menujeu("513x513", 5)
+    tableau = Menujeu("513x513", 60)
     tableau.mainloop()
 
 if __name__ == "__main__":
