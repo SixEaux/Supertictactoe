@@ -724,6 +724,10 @@ class Solutions(Jeutab):
         return vide
 
 
+class JouerSeulGraph(Multijoueur):
+    def __init__(self, geometria, nbpokeparequipe):
+        super().__init__(geometria, nbpokeparequipe)
+
 
 
 
