@@ -3,7 +3,7 @@ from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 from tkinter.ttk import Combobox
-import random
+import copy
 from tabulate import tabulate
 import pandas as pd
 
@@ -36,8 +36,8 @@ class Menujeu(Tk):
 
 class Jeutab:
     def __init__(self):
-        self.joueurs = (("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
-                        ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15)))
+        self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
+                        False : ("O", "blue", "lightblue", PhotoImage(file = r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))}
         self.ordre = cycle(self.joueurs) #ordre des joueurs
         self.quijoue = next(self.ordre) #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
@@ -53,7 +53,7 @@ class Jeutab:
         print(tabulate(self.tableau.values(), tablefmt="heavy_outline"))
 
     def changejoueur(self): #passer au joueur suivant
-        self.quijoue = next(self.ordre)
+        self.quijoue = not self.quijoue
 
     def changetictac(self, mouvement):
         if self.grostictac[mouvement[1]] == "":
@@ -71,16 +71,16 @@ class Jeutab:
 
     def fairemouvement(self, mouvement):  # faire mouvement dans tableau si possible
         if self.mouvpossible(mouvement):
-            self.tableau[mouvement[0]][mouvement[1]] = self.quijoue[0]
+            self.tableau[mouvement[0]][mouvement[1]] = self.joueurs[self.quijoue][0]
             if self.gagnepetit(mouvement[0]):
-                self.grostictac[mouvement[0]] = self.quijoue[0]
+                self.grostictac[mouvement[0]] = self.joueurs[self.quijoue][0]
                 self.gagnegros()
             elif self.estceegalite(self.tableau[mouvement[0]]):
                 self.grostictac[mouvement[0]] = "Imp"
                 if self.estceegalite(self.grostictac):
                     self.egalite()
 
-            self.quijoue = next(self.ordre)
+            self.quijoue = not self.quijoue
             self.changetictac(mouvement)
 
     def gagnepetit(self, tictac): #regarder si dans le tableau il y a des gagnants, tictac c'est quel tableau des petits
@@ -123,8 +123,7 @@ class Jeutab:
         self.tableau = {i: ["" for j in range(9)] for i in range(9)}
         self.grostictac = ["" for i in range(9)]
         self.queltictac = None
-        self.ordre = cycle(self.joueurs)  # ordre des joueurs
-        self.quijoue = next(self.ordre)  # a qui le tour
+        self.quijoue = True # a qui le tour
 
 
 class JeutabPokemon:
@@ -184,11 +183,39 @@ class JeutabPokemon:
     #         self.quijoue = not self.quijoue
     #         self.changetictac(mouvement)
 
-    def combatsimple(self, mouv): #faire combat pokemon avec creation nouvelle fenetre pour le combat, faire le combat et finir par return le joueur qui a gagné (x ou o)
-        return random.choice(["X", "O"])
+    def combatsimple(self, mouv):
+        pokemon1 = self.pokemonutilise[mouv[0]][mouv[1]]
+        pokemon2 = self.choixpoke
 
-    def combatcomplet(self):
-        pass
+        weights = {
+            "Total": 2.0,
+            "HP": 1.3,
+            "Attack": 1.5,
+            "Defense": 1.5,
+            "Sp. Atk": 1.2,
+            "Sp. Def": 1.2,
+            "Speed": 1.0
+        }
+
+        score1 = 0
+        score2 = 0
+
+        for stat, weight in weights.items():
+            stat1 = self.pokedex[stat][pokemon1]
+            stat2 = self.pokedex[stat][pokemon2]
+
+
+            if stat1 > stat2:
+                score1 += weight
+            elif stat2 > stat1:
+                score2 += weight
+
+        if score1 > score2:
+            return self.joueurs[not self.quijoue][0]
+        elif score2 > score1:
+            return self.joueurs[self.quijoue][0]
+        else:
+            return "Egalite"
 
     def changetictac(self, mouvement):
         if self.grostictac[mouvement[1]] == "":
@@ -324,7 +351,7 @@ class Multijoueur(Tk):
 
         f = LabelFrame(self, background="white", highlightbackground="grey", highlightthickness=2)
         f.grid(row=3, column=1)
-        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+        self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
         self.label = Label(f, textvariable=self.txt, font=self.font)
         self.label.pack(side=BOTTOM)
 
@@ -343,15 +370,15 @@ class Multijoueur(Tk):
         if self.jeutab.fin:
             pass
         elif self.jeutab.mouvpossible(pos):
-            self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.quijoue[0]
-            bouton.config(text = self.jeutab.quijoue[0], fg = self.jeutab.quijoue[1], font=self.font)
+            self.jeutab.tableau[pos[0]][pos[1]] = self.jeutab.joueurs[self.jeutab.quijoue][0]
+            bouton.config(text = self.jeutab.joueurs[self.jeutab.quijoue][0], fg = self.jeutab.joueurs[self.jeutab.quijoue][1], font=self.font)
             self.tourdejeu(pos)
         else:
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
 
         if self.jeutab.gagnegros():
-            self.jeutab.changejoueur()
-            self.fin(f"{self.jeutab.quijoue[0]} a gagné!")
+            # self.jeutab.changejoueur()
+            self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
         elif self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
 
@@ -362,7 +389,7 @@ class Multijoueur(Tk):
         tabfrm = self.jeutab.tableau[posfrm]
 
         if self.jeutab.gagnepetit(posfrm):
-            self.jeutab.grostictac[posfrm] = self.jeutab.quijoue[0]
+            self.jeutab.grostictac[posfrm] = self.jeutab.joueurs[self.jeutab.quijoue][0]
             f = self.postofrm[posfrm]
             self.actualiserfrm(f)
 
@@ -373,7 +400,7 @@ class Multijoueur(Tk):
 
 
         self.jeutab.changejoueur()
-        self.txt.set(f"Tour de: {self.jeutab.quijoue[0]}")
+        self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
 
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
@@ -387,12 +414,12 @@ class Multijoueur(Tk):
         else:
             for i in range(9):
                 if self.jeutab.grostictac[i] == '':
-                    self.postofrm[i].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
 
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
-            i.config(text="", bg = self.jeutab.quijoue[2])
+            i.config(text="", bg = self.jeutab.joueurs[self.jeutab.quijoue][2])
 
     def fin(self, queltype):
         self.txt.set(queltype)
@@ -446,17 +473,6 @@ class MultijoueurPokemon(Tk):
 
         self.postofrm = []
         self.butons = {}
-
-        self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
-        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset\{nom.lower()}.png")
-        a,b = self.jeutab.selectionner_pokemon()
-        self.equipes = {"X":a, "O":b}
-
-        self.pokemonutilise = {i : ["" for j in range(9)] for i in range(9)} #pokemons qui ont été utilises
-
-        self.choixpoke = None
-
-        self.boolinutile = False
 
         self.initialisationgraph()
 
@@ -535,6 +551,16 @@ class MultijoueurPokemon(Tk):
                     buton.config(image="", text=self.jeutab.joueurs[self.jeutab.quijoue][0], fg=self.jeutab.joueurs[self.jeutab.quijoue][1])
                     self.tourdejeu(mouv)
 
+                elif combat=="Egalite":
+                    self.jeutab.tableau[mouv[0]][mouv[1]] = ""
+                    self.jeutab.equipes[self.jeutab.joueurs[not self.jeutab.quijoue][0]].append(self.jeutab.pokemonutilise[mouv[0]][mouv[1]])
+                    self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]].append(self.jeutab.choixpoke)
+                    buton.config(image="", text="")
+                    return
+
+                else:
+                    print("Je ne sais pas pourquoi")
+
             else:
                 messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre",parent=self)
 
@@ -542,8 +568,7 @@ class MultijoueurPokemon(Tk):
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
 
         if self.jeutab.gagnegros():
-            self.jeutab.changejoueur()
-            self.fin(f"{self.jeutab.joueurs[self.jeutab.quijoue][0]} a gagné!")
+            self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
 
         elif self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
@@ -717,6 +742,89 @@ class MultijoueurPokemon(Tk):
         if self.jeutab.queltictac is not None:
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
+
+class Solutions(Jeutab):
+    def __init__(self, ordi, boolordi):
+        super().__init__()
+        self.ordijoue = ordi #est-ce qu'il joue
+        self.ordi = boolordi #bool de ce qu'il joue
+
+    def evaluposition(self, derniermouv, jeu): #jeu serait un dico comme self.tableau mais d'une position qconque
+        if derniermouv is None:
+            return 0
+        else:
+            cles = jeu.keys()
+            for i in self.gagne:
+                if cles[i[0]] == cles[i[1]] == cles[i[2]] != "":
+                    if cles[i[0]] == self.joueurs[self.ordijoue][0]:
+                        return 100
+                    elif cles[i[0]] == self.joueurs[not self.ordijoue][0]:
+                        return -100
+
+            # tictac = derniermouv[1]
+            # for i in self.gagne:
+            #     if jeu[tictac][i[0]] == jeu[tictac][i[1]] == jeu[tictac][i[2]] != "":
+            #         if jeu[tictac][i[0]] == self.ordi:
+            #             return 10
+            #         elif jeu[tictac][i[0]] == self.autre:
+            #             return -10
+
+    def minimax(self, derniermouv, position, profondeur, aquitour):
+        ponctuation = self.evaluposition(derniermouv, position)
+
+        if ponctuation == 10:
+            return ponctuation
+
+        if ponctuation == -10:
+            return ponctuation
+
+        if self.estceegalite(position.keys()):
+            return 0
+
+        copiepos = position.deepcopy()
+
+        if self.ordijoue:
+            meilleur = -1000
+            vide = self.casesvides(position)
+            for case in vide:
+
+                copiepos[case[0]][case[1]] = self.joueurs[self.ordi][0]
+
+                meilleur = max(meilleur, self.minimax((case[0], case[1]), copiepos,profondeur+1, not self.ordijoue))
+
+                copiepos[case[0]][case[1]] = ""
+
+            return meilleur
+
+        elif not self.ordijoue:
+            meilleur = 1000
+            vide = self.casesvides(position)
+            for case in vide:
+                copiepos[case[0]][case[1]] = self.joueurs[not self.ordi][0]
+
+                meilleur = min(meilleur, self.minimax((case[0], case[1]), copiepos, profondeur + 1, not self.ordijoue))
+
+                copiepos[case[0]][case[1]] = ""
+
+            return meilleur
+
+        else:
+            print("OOOOPPPPS")
+
+
+
+    def casesvides(self, position):
+        vide = []
+        for i in range(9):
+            for j in range(9):
+                if position[i][j] == "":
+                    vide.append((i,j))
+
+        return vide
+
+
+
+
 
 
 
