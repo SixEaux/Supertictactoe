@@ -2,7 +2,6 @@ from tkinter import *
 from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
-from tkinter.ttk import Combobox
 import copy
 from tabulate import tabulate
 import pandas as pd
@@ -411,7 +410,7 @@ class Multijoueur(Tk):
 
         self.jeutab.changetictac(mouv)
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.quijoue[1], highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
         else:
             for i in range(9):
                 if self.jeutab.grostictac[i] == '':
