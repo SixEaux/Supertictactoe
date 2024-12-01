@@ -129,8 +129,8 @@ class Jeutab:
 
 class JeutabPokemon:
     def __init__(self, nbequipepoke):
-        self.joueurs = {True : ("X", "red", "indianred",PhotoImage(file=r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_rouge.png").subsample(15, 15)),
-                        False : ("O", "blue", "lightblue",PhotoImage(file=r"C:/Users/dc200/PycharmProjects/Supertictactoe/Pokeball_bleu.png").subsample(15, 15))}
+        self.joueurs = {True : ("X", "red", "indianred",PhotoImage(file=r"Pokeball_rouge.png").subsample(15, 15)),
+                        False : ("O", "blue", "lightblue",PhotoImage(file=r"Pokeball_bleu.png").subsample(15, 15))}
 
         # self.ordre = cycle(self.joueurs)  # ordre des joueurs
         self.quijoue = True  # a qui le tour
@@ -448,9 +448,8 @@ class MultijoueurPokemon(Tk):
         self.butons = {}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
-        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"{nom.lower()}.png")
-
-        a,b = self.selectionner_pokemon(60)
+        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset\{nom.lower()}.png")
+        a,b = self.jeutab.selectionner_pokemon()
         self.equipes = {"X":a, "O":b}
 
         self.pokemonutilise = {i : ["" for j in range(9)] for i in range(9)} #pokemons qui ont été utilises
@@ -550,15 +549,15 @@ class MultijoueurPokemon(Tk):
             self.fin("Egalite")
 
 
-    def choixpokemon(self, buton, mouv, top): #choix pokemon et l'enlever des pokemons dispo
+    """def choixpokemon(self, buton, mouv, top): #choix pokemon et l'enlever des pokemons dispo
         # print(self.jeutab.quijoue[0], self.jeutab.equipes[self.jeutab.quijoue[0]])
-        choixpoke = Combobox(top, values=self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]], state="readonly")
-        choixpoke.pack()
-        boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
-        boton.pack()
-        top.focus()
-"""
-        fenetre_pokemons = Toplevel(self)
+       # choixpoke = Combobox(top, values=self.jeutab.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]], state="readonly")
+        #choixpoke.pack()
+        #boton = Button(top, text="Accepter", command=lambda a=choixpoke: self.choisi(a, top, buton, mouv))
+        #boton.pack()
+        #top.focus()
+
+        fenetre_pokemons = top
         fenetre_pokemons.title("Liste des Pokémon")
         fenetre_pokemons.geometry("500x500")
 
@@ -566,13 +565,13 @@ class MultijoueurPokemon(Tk):
         #label.pack(pady=10)
 
         # Afficher les boutons avec les images
-        for pokemon in self.equipes[self.jeutab.quijoue[0]]:
+        for pokemon in self.equipes[self.jeutab.joueurs[self.jeutab.quijoue][0]]:
             # Charger l'image du Pokémon
-            image = Image.open(self.pokedex[pokemon]["Image"]).resize((80, 80))  # Redimensionner l'image
+            image = Image.open(self.pokedex.loc[pokemon]["Image"]).resize((80, 80))  # Redimensionner l'image
             photo = ImageTk.PhotoImage(image)
 
             # Créer un bouton avec l'image et le nom
-            bouton = self.Button(
+            bouton = Button(
                 fenetre_pokemons,
                 text=pokemon,
                 image=photo,
@@ -580,6 +579,70 @@ class MultijoueurPokemon(Tk):
                 font=("Arial", 10))
             bouton.image = photo  # Stocker une référence pour éviter le garbage collection
             bouton.pack(pady=5)
+            boton = Button(top, text="Accepter", command=lambda a=bouton: self.choisi(a, top, buton, mouv))
+            boton.pack()
+            top.focus()"""
+
+    def choixpokemon(self, buton, mouv, top):
+        fenetre_pokemons = top
+        fenetre_pokemons.title("Choisissez un Pokémon")
+        fenetre_pokemons.geometry("713x613")
+
+        fenetre_pokemons.grab_set()  #empêche l'interaction avec les autres fenêtres
+
+        joueur_actuel = self.jeutab.joueurs[self.jeutab.quijoue][0]
+        pokemons_dispo = self.equipes[joueur_actuel]
+        pages = [pokemons_dispo[i:i + 20] for i in range(0, len(pokemons_dispo), 20)]  #20 Pokémon par page (5x4)
+        page_actuelle = [0]  #permet de suivre la page actuelle
+        self.images_pokemon = []
+
+        def afficher_page(page_num):
+            for widget in fenetre_pokemons.winfo_children():
+                widget.destroy()
+
+            frame_grille = Frame(fenetre_pokemons)
+            frame_grille.pack(expand=True, fill="both", padx=10, pady=10)
+
+            ligne, colonne = 0, 0
+            for pokemon in pages[page_num]:
+                image = Image.open(self.pokedex.loc[pokemon]["Image"]).resize((80, 80))
+                photo = ImageTk.PhotoImage(image)
+                self.images_pokemon.append(photo)
+                stats = self.pokedex.loc[pokemon][["HP", "Attack", "Defense"]]
+                stats_text = f"HP: {stats['HP']} | Attaque: {stats['Attack']} | Défense: {stats['Defense']}"
+
+                bouton = Button(frame_grille, text=f"{pokemon}\n{stats_text}", image=photo, compound="top",
+                                command=lambda p=pokemon: self.choisir_pokemon(fenetre_pokemons, p),
+                                width=120, height=120, wraplength=120)
+                bouton.grid(row=ligne, column=colonne, padx=5, pady=5)
+
+                colonne += 1
+                if colonne == 5:
+                    colonne = 0
+                    ligne += 1
+
+
+            tourner_page = Frame(fenetre_pokemons)
+            tourner_page.pack(pady=5)  #placer directement sous la grille
+
+            if page_num > 0:
+                Button(tourner_page, text="Page précédente",
+                       command=lambda: afficher_page(page_num - 1),
+                       width=15).pack(side="left", padx=10)
+
+            if page_num < len(pages) - 1:
+                Button(tourner_page, text="Page suivante",
+                       command=lambda: afficher_page(page_num + 1),
+                       width=15).pack(side="right", padx=10)
+        afficher_page(page_actuelle[0]) #afficher la première page
+
+    def choisir_pokemon(self, fen, pokemon):
+        self.jeutab.choixpoke = pokemon
+        print(f"Pokémon choisi : {pokemon}")
+        fen.destroy()
+
+
+
 
     def choisi(self, objchoix, fen, buton, mouv):
         self.jeutab.choixpoke = objchoix.get()
@@ -659,7 +722,7 @@ class MultijoueurPokemon(Tk):
 
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
                                         #ainsi pouvoir faire plus facilement les algos de résolution
-    tableau = Menujeu("513x513", 5)
+    tableau = Menujeu("513x513", 60)
     tableau.mainloop()
 
 if __name__ == "__main__":
