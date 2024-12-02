@@ -2,7 +2,7 @@ from tkinter import *
 from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
-import copy
+import random
 from tabulate import tabulate
 import pandas as pd
 
@@ -23,6 +23,7 @@ class Menujeu(Tk):
         Label(menu, text="SuperTicTacToe").pack()
         Button(menu, text='Multijoueur', command=lambda: self.allerau('jeu')).pack()
         Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
+        Button(menu, text='Jouer seul sans pokemon', command=lambda: self.allerau('jouerseulsanspoke')).pack()
         Button(menu, text='Quitter', command=self.quit).pack()
 
     def allerau(self, enquoi):
@@ -31,6 +32,8 @@ class Menujeu(Tk):
             Multijoueur(self.geometria, self.nbpokeparequipe)
         elif enquoi == 'pokemon':
             MultijoueurPokemon(self.geometria, self.nbpokeparequipe)
+        elif enquoi == 'jouerseulsanspoke':
+            JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe)
 
 
 class Jeutab:
@@ -50,6 +53,9 @@ class Jeutab:
 
     def printTableau(self):
         print(tabulate(self.tableau.values(), tablefmt="heavy_outline"))
+
+    def changepos(self, pos):
+        return 3*pos[0] + pos[1]
 
     def changejoueur(self): #passer au joueur suivant
         self.quijoue = not self.quijoue
@@ -322,6 +328,7 @@ class Multijoueur(Tk):
 
         self.postofrm = []
         self.butons = {}
+        self.butonsinv = {}
 
         self.initialisationgraph()
 
@@ -363,6 +370,7 @@ class Multijoueur(Tk):
             b.config(command = lambda a=b: self.creerxo(a), height =int(self.height), width =int(self.width))
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2, sticky="nsew")
             self.butons[b] = (self.postofrm.index(frame), p)
+            self.butonsinv[(self.postofrm.index(frame), p)] = b
 
     def creerxo(self, bouton): #creer croix ou ronds
         pos = self.butons[bouton]
@@ -384,7 +392,6 @@ class Multijoueur(Tk):
 
 
     def tourdejeu(self, mouv):
-
         posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
 
@@ -415,6 +422,8 @@ class Multijoueur(Tk):
             for i in range(9):
                 if self.jeutab.grostictac[i] == '':
                     self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+        return
+
 
 
     def actualiserfrm(self, frm):
@@ -778,7 +787,6 @@ class Solutions(Jeutab):
             print("OOOOPPPPS")
 
 
-
     def casesvides(self, position):
         vide = []
         for i in range(9):
@@ -789,11 +797,74 @@ class Solutions(Jeutab):
         return vide
 
 
-class JouerSeulGraph(Multijoueur):
+class JouerSeulGraphsanspoke(Multijoueur):
     def __init__(self, geometria, nbpokeparequipe):
         super().__init__(geometria, nbpokeparequipe)
+        self.ordijoue = True #joue les x
+        self.humain = False
+        self.jouerordi()
 
+    def casesvide(self, tab):
+        vide = []
+        for i in range(9):
+            print(i)
+            if tab[i] == "":
+                vide.append(i)
+            print(vide)
+        return vide
 
+    def aleatoire(self):
+            if self.jeutab.queltictac is None:
+                choixgros = random.choice(self.casesvide(self.jeutab.grostictac))
+                choixpetit = random.choice(self.casesvide(self.jeutab.tableau[choixgros]))
+                choix = (choixgros, choixpetit)
+                print(choix)
+                self.creerxo(self.butonsinv[(choix[0], choix[1])])
+            else:
+                choixpetit = random.choice(self.casesvide(self.jeutab.tableau[self.jeutab.queltictac]))
+                choix = (self.jeutab.queltictac, choixpetit)
+                self.creerxo(self.butonsinv[(choix[0], choix[1])])
+
+    def jouerordi(self):
+        if self.jeutab.quijoue == self.ordijoue:
+            self.aleatoire()
+        else:
+            pass
+
+    def tourdejeu(self, mouv):
+        posfrm = mouv[0]
+        tabfrm = self.jeutab.tableau[posfrm]
+
+        if self.jeutab.gagnepetit(posfrm):
+            self.jeutab.grostictac[posfrm] = self.jeutab.joueurs[self.jeutab.quijoue][0]
+            f = self.postofrm[posfrm]
+            self.actualiserfrm(f)
+
+        elif self.jeutab.estceegalite(tabfrm):
+            self.jeutab.grostictac[posfrm] = "666"
+            for i in self.postofrm[mouv[0]].winfo_children():
+                i.config(text="", bg="black")
+
+        self.jeutab.changejoueur()
+        self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
+
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
+        self.jeutab.changetictac(mouv)
+        if self.jeutab.queltictac is not None:
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                          highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
+        self.jouerordi()
+        return
 
 
 
