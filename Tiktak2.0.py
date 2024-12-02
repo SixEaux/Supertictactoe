@@ -16,6 +16,8 @@ class Menujeu(Tk):
         self.geometria = geometria
         self.nbpokeparequipe = nbpokeparequipe
         self.menu()
+        self.modeordi = 1
+        self.modes = [1]
 
     def menu(self):
         menu = Frame(self)
@@ -25,6 +27,11 @@ class Menujeu(Tk):
         Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
         Button(menu, text='Jouer seul sans pokemon', command=lambda: self.allerau('jouerseulsanspoke')).pack()
         Button(menu, text='Quitter', command=self.quit).pack()
+        Button(menu, text='Changer mode ordi en aleatoire', command=lambda: self.changermode(1)).pack()
+
+    def changermode(self, mode):
+        self.modeordi = mode
+
 
     def allerau(self, enquoi):
         self.destroy()
@@ -33,15 +40,15 @@ class Menujeu(Tk):
         elif enquoi == 'pokemon':
             MultijoueurPokemon(self.geometria, self.nbpokeparequipe)
         elif enquoi == 'jouerseulsanspoke':
-            JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe)
+            JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe, self.modeordi)
 
 
 class Jeutab:
     def __init__(self):
         self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
                         False : ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))}
-        self.ordre = cycle(self.joueurs) #ordre des joueurs
-        self.quijoue = next(self.ordre) #a qui le tour
+
+        self.quijoue = True #a qui le tour
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i : ["" for j in range(9)] for i in range(9)} #tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
@@ -131,22 +138,9 @@ class Jeutab:
         self.quijoue = True # a qui le tour
 
 
-class JeutabPokemon:
+class JeutabPokemon(Jeutab):
     def __init__(self, nbequipepoke):
-        self.joueurs = {True : ("X", "red", "indianred",PhotoImage(file=r"Pokeball_rouge.png").subsample(15, 15)),
-                        False : ("O", "blue", "lightblue",PhotoImage(file=r"Pokeball_bleu.png").subsample(15, 15))}
-
-        # self.ordre = cycle(self.joueurs)  # ordre des joueurs
-        self.quijoue = True  # a qui le tour
-        self.queltictac = None  # ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
-
-        self.tableau = {i: ["" for j in range(9)] for i in range(9)}  # tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
-        self.grostictac = ["" for i in range(9)]  # chiffre du tictactoe avec "" si pas gagné puis mettre label si gagné
-        self.gagne = {(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8),(2, 4, 6)}  # positions à verifier si gagné
-
-        self.fin = False  # estce que il y a déjà un gagnant?
-        self.gagnant = ""
-
+        super().__init__()
         self.definitivementgagne = {i: ["" for j in range(9)] for i in range(9)}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
@@ -798,11 +792,13 @@ class Solutions(Jeutab):
 
 
 class JouerSeulGraphsanspoke(Multijoueur):
-    def __init__(self, geometria, nbpokeparequipe):
+    def __init__(self, geometria, nbpokeparequipe, modeordi):
         super().__init__(geometria, nbpokeparequipe)
         self.ordijoue = True #joue les x
         self.humain = False
+        self.modeordi = modeordi
         self.jouerordi()
+
 
     def casesvide(self, tab):
         vide = []
@@ -827,7 +823,8 @@ class JouerSeulGraphsanspoke(Multijoueur):
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
-            self.aleatoire()
+            if self.modeordi == 1:
+                self.aleatoire()
         else:
             pass
 
