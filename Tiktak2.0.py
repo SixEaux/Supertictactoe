@@ -53,7 +53,6 @@ class Menujeu(Tk):
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
 
-
 class Jeutab:
     def __init__(self):
         self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
@@ -147,7 +146,6 @@ class Jeutab:
         self.grostictac = ["" for i in range(9)]
         self.queltictac = None
         self.quijoue = True # a qui le tour
-
 
 class JeutabPokemon(Jeutab):
     def __init__(self, nbequipepoke):
@@ -858,7 +856,7 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
         self.ordi = campordi #joue les x
         self.humain = not campordi
         self.modeordi = modeordi
-        self.jouerordi()
+        self.jouerordi(True)
 
     def casesvide(self, tab):
         vide = []
@@ -880,7 +878,9 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
                 pokemon = random.choice(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
                 self.mouvementpoke(self.butonsinv[(choix[0], choix[1])], pokemon)
 
-    def jouerordi(self):
+    def jouerordi(self, bool = False):
+        if not bool:
+            self.after(400)
         if self.jeutab.quijoue == self.ordi:
             if self.modeordi == 1:
                 self.aleatoire()
