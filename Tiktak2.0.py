@@ -369,13 +369,6 @@ class Multijoueur(Tk):
         else:
             messagebox.showwarning("ATTENTION", "Vous avez choisi une case impossible! \n Essayez une autre", parent=self)
 
-        if self.jeutab.gagnegros():
-            # self.jeutab.changejoueur()
-            self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
-        elif self.jeutab.estceegalite(self.jeutab.grostictac):
-            self.fin("Egalite")
-
-
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
         tabfrm = self.jeutab.tableau[posfrm]
@@ -407,9 +400,14 @@ class Multijoueur(Tk):
             for i in range(9):
                 if self.jeutab.grostictac[i] == '':
                     self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+
+        if self.jeutab.gagnegros():
+            # self.jeutab.changejoueur()
+            self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
+        elif self.jeutab.estceegalite(self.jeutab.grostictac):
+            self.fin("Egalite")
+
         return
-
-
 
     def actualiserfrm(self, frm):
         for i in frm.winfo_children():
@@ -797,6 +795,8 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return vide
 
     def aleatoire(self):
+            if self.jeutab.fin:
+                return
             if self.jeutab.queltictac is None:
                 choixgros = random.choice(self.casesvide(self.jeutab.grostictac))
                 choixpetit = random.choice(self.casesvide(self.jeutab.tableau[choixgros]))
@@ -846,6 +846,13 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 if self.jeutab.grostictac[i] == '':
                     self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
                                             highlightthickness=2)
+
+        if self.jeutab.gagnegros():
+            # self.jeutab.changejoueur()
+            self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
+        elif self.jeutab.estceegalite(self.jeutab.grostictac):
+            self.fin("Egalite")
+
         self.jouerordi()
         return
 
@@ -1014,7 +1021,6 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
         return
 
     def rejouer(self):
-
         for i in self.postofrm:
             for j in i.winfo_children():
                 j.config(text="", bg="white", image="")
