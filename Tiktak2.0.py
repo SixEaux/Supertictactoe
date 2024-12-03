@@ -153,7 +153,7 @@ class JeutabPokemon(Jeutab):
         self.definitivementgagne = {i: ["" for j in range(9)] for i in range(9)}
 
         self.pokedex = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
-        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset\{nom.lower()}.png")
+        self.pokedex["Image"] = self.pokedex.index.map(lambda nom: f"Pokemon Dataset/{nom.lower()}.png")
 
         self.nbpokeparequipe = nbequipepoke
         a, b = self.selectionner_pokemon()
@@ -858,22 +858,22 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
         self.modeordi = modeordi
         self.jouerordi(True)
 
-    def casesvide(self, tab):
+    def casesvide(self, tab1, tab2=None):
         vide = []
         for i in range(9):
-            if tab[i] == "":
+            if tab1[i] == "" and (tab2 is None or tab2[i] != self.jeutab.joueurs[self.jeutab.quijoue][0]):
                 vide.append(i)
         return vide
 
     def aleatoire(self):
             if self.jeutab.queltictac is None:
                 choixgros = random.choice(self.casesvide(self.jeutab.grostictac))
-                choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[choixgros])) #erreur vient du faite qu'il choisit une case qui est placee par lui
+                choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[choixgros], self.jeutab.tableau[choixgros])) #erreur vient du faite qu'il choisit une case qui est placee par lui
                 choix = (choixgros, choixpetit)
                 pokemon = random.choice(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
                 self.mouvementpoke(self.butonsinv[(choix[0], choix[1])], pokemon)
             else:
-                choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[self.jeutab.queltictac])) #erreur vient du faite qu'il choisit une case qui est placee par lui
+                choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[self.jeutab.queltictac], self.jeutab.tableau[self.jeutab.queltictac])) #erreur vient du faite qu'il choisit une case qui est placee par lui
                 choix = (self.jeutab.queltictac, choixpetit)
                 pokemon = random.choice(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
                 self.mouvementpoke(self.butonsinv[(choix[0], choix[1])], pokemon)
@@ -1012,6 +1012,17 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
 
         self.jouerordi()
         return
+
+    def rejouer(self):
+
+        for i in self.postofrm:
+            for j in i.winfo_children():
+                j.config(text="", bg="white", image="")
+        self.txt.set("Prets?")
+        if self.jeutab.queltictac is not None:
+            self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
+        self.jeutab.rejouer()
+        self.jouerordi(True)
 
 def jouer(): #ameliorer le code en mettant toutes les varaibles non graphiques dans une class jeutabpokemon et
                                         #ainsi pouvoir faire plus facilement les algos de résolution
