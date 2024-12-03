@@ -406,7 +406,6 @@ class Multijoueur(Tk):
             self.fin(f"{self.jeutab.joueurs[not self.jeutab.quijoue][0]} a gagné!")
         elif self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
-
         return
 
     def actualiserfrm(self, frm):
