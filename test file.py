@@ -17,7 +17,7 @@ def calculate_damage(pokemon1, pokemon2):
     else:
         mc = Pokemon2[type1] * random_factor
     damage = (((((Pokemon1["Level"] * 0.4 + 2) * Pokemon1["Attack"]) / Pokemon2["Defense"]) / 50) + 2) * mc*10
-    return max(damage, 0)  #pokeons cant deal less than 0 damage
+    return max(damage, 1)  #pokeons cant deal less than 0 damage
 
 
 #print(calculate_damage("Venusaur", "Bulbasaur"))
@@ -38,14 +38,17 @@ def pokemon_combat(Pokemon1, Pokemon2):
 
     # Determine the result
     if HP1 <= 0 and HP2 <= 0:
-        return  (" both fainted! its a draw.")
+        print  (" both fainted! its a draw.")
+        return ("DRAW")
     elif HP1 <= 0:
-        return f"{pokemon1_name} is Dead! {pokemon2_name} WINS THE FIGHT."
+        print (f"{pokemon1_name} is Dead! {pokemon2_name} WINS THE FIGHT.")
+        return pokemon2_name
     elif HP2 <= 0:
-        return f"{pokemon2_name} is Dead! {pokemon1_name} WINS THE FIGHT."
+        print (f"{pokemon2_name} is Dead! {pokemon1_name} WINS THE FIGHT.")
+        return pokemon1_name
     else:
-        return ("Both Pokémon survived!")
+        print ("Both Pokémon survived!")
+        return ("DRAW")
 
-print(pokemon_combat("Paras", "Charmander"))
-
+print(pokemon_combat("Pidgey", "Gastly"))
 
