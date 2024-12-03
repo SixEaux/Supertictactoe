@@ -3,6 +3,7 @@ from itertools import cycle
 from tkinter import messagebox
 from tkinter import font as tkFont
 import copy
+import random
 from tabulate import tabulate
 import pandas as pd
 
@@ -20,25 +21,43 @@ class Menujeu(Tk):
     def menu(self):
         menu = Frame(self)
         menu.pack()
-        Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Multijoueur', command=lambda: self.allerau('jeu')).pack()
-        Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
+        self.label = Label(menu, text="SuperTicTacToe")
+        self.bouton1 = Button(menu, text='1 VS 1', command=lambda: self.allerau('jeu'))
+        self.bouton2 = Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon'))
+        self.bouton3 = Button(menu, text='1 VS ORDI', command=lambda: self.allerau('ordi'))
+        self.label.pack()
+        self.bouton1.pack()
+        self.bouton2.pack()
+        self.bouton3.pack()
         Button(menu, text='Quitter', command=self.quit).pack()
 
     def allerau(self, enquoi):
+        if enquoi == 'ordi':
+            self.choisir_qui_commence()
+        else:
+            self.destroy()
+            if enquoi == 'jeu':
+                Multijoueur(self.geometria, self.nbpokeparequipe)
+            elif enquoi == 'pokemon':
+                MultijoueurPokemon(self.geometria, self.nbpokeparequipe)
+
+
+    def choisir_qui_commence(self):
+        self.label.config(text = "Jouer X ou O ?")
+        self.bouton1.config(text='X', command=lambda: self.lancer_contre_ordi(True))
+        self.bouton2.config(text='0', command=lambda: self.lancer_contre_ordi(False))
+        self.bouton3.destroy()
+
+    def lancer_contre_ordi(self, bool):
         self.destroy()
-        if enquoi == 'jeu':
-            Multijoueur(self.geometria, self.nbpokeparequipe)
-        elif enquoi == 'pokemon':
-            MultijoueurPokemon(self.geometria, self.nbpokeparequipe)
+        ContreOrdi(self.geometria, self.nbpokeparequipe, bool)
 
 
 class Jeutab:
     def __init__(self):
         self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
                         False : ("O", "blue", "lightblue", PhotoImage(file = r"Pokeball_bleu.png").subsample(15, 15))}
-        self.ordre = cycle(self.joueurs) #ordre des joueurs
-        self.quijoue = next(self.ordre) #a qui le tour
+        self.quijoue = True
         self.queltictac = None #ou est-ce que il faut jouer/ si None alors tu peux jouer nimporte ou
 
         self.tableau = {i : ["" for j in range(9)] for i in range(9)} #tableau avec le chiffre de chaque tictactoe et une liste avec le label de chaque case
@@ -123,6 +142,28 @@ class Jeutab:
         self.grostictac = ["" for i in range(9)]
         self.queltictac = None
         self.quijoue = True # a qui le tour
+
+    def jouer_ordi(self):
+        if self.fin:
+            return None
+
+        if self.queltictac is not None:
+            tableau_actuel = self.tableau[self.queltictac]
+            mouvements_valides = []
+            for i in range(9):
+                if tableau_actuel[i] == "":
+                    mouvements_valides.append(self.queltictac, i)
+        else:
+            mouvements_valides = []
+            for i in self.tableau:
+                if self.grostictac[i] == "":  # tableau pas encore gagné
+                    for j in self.tableau[i]:
+                        if j == "":
+                            mouvements_valides.append((i, j))
+
+        if mouvements_valides:
+            return random.choice(mouvements_valides)
+        return None
 
 
 class JeutabPokemon:
@@ -382,6 +423,20 @@ class Multijoueur(Tk):
         elif self.jeutab.estceegalite(self.jeutab.grostictac):
             self.fin("Egalite")
 
+        if not self.jeutab.quijoue:  # Si c'est au tour de l'ordinateur.
+            mouvement_ordi = self.jeutab.jouer_ordi()
+            if mouvement_ordi:
+                pos_frame, pos_case = mouvement_ordi
+                bouton_ordi = None
+
+                # Trouver le bouton correspondant au mouvement choisi.
+                for bouton, pos in self.butons.items():
+                    if pos == (pos_frame, pos_case):
+                        bouton_ordi = bouton
+                        break
+
+                if bouton_ordi:
+                    self.creerxo(bouton_ordi)  # Faire jouer l'ordinateur.
 
     def tourdejeu(self, mouv):
 
@@ -709,12 +764,104 @@ class MultijoueurPokemon(Tk):
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
 
+
+class ContreOrdi(Multijoueur):
+    def __init__(self, geometria, nbpokeparequipe, bool):
+        super().__init__(geometria, nbpokeparequipe)
+        self.title("1 VS ORDI")
+        self.joueur = bool # le joueur commence en X ou O
+        self.ordi = not bool
+
+    def creerxo(self, bouton):
+        pos = self.butons[bouton]
+
+        if self.jeutab.fin:
+            return
+
+        # Vérifier si le mouvement est valide
+        if self.jeutab.mouvpossible(pos):
+            # Le joueur humain joue
+            self.jeutab.fairemouvement(pos)
+            bouton.config(
+                text=self.jeutab.joueurs[self.joueur][0],
+                fg=self.jeutab.joueurs[self.joueur][1],
+                font=self.font,
+            )
+            self.tourdejeu(pos)
+
+        else:
+            messagebox.showwarning(
+                "ATTENTION",
+                "Vous avez choisi une case impossible! \n Essayez une autre",
+                parent=self,
+            )
+            return
+
+        if self.jeutab.fin:
+            self.fin(f"{self.jeutab.gagnant} a gagné!")
+            return
+
+        # Tour de l'ordinateur
+        if self.jeutab.quijoue != self.joueur:
+            mouvement_ordi = self.jouer_ordi()
+            if mouvement_ordi:
+                pos_frame, pos_case = mouvement_ordi
+                bouton_ordi = None
+
+                # Trouver le bouton correspondant au mouvement choisi par l'ordinateur
+                for bouton, pos in self.butons.items():
+                    if pos == (pos_frame, pos_case):
+                        bouton_ordi = bouton
+                        break
+
+                if bouton_ordi:
+                    self.jeutab.fairemouvement(mouvement_ordi)
+                    bouton_ordi.config(
+                        text=self.jeutab.joueurs[self.ordi][0],
+                        fg=self.jeutab.joueurs[self.ordi][1],
+                        font=self.font,
+                    )
+                    self.tourdejeu(mouvement_ordi)
+
+        # Vérifier si l'ordinateur a gagné ou s'il y a égalité
+        if self.jeutab.fin:
+            if self.jeutab.gagnant == "Aucun des deux":
+                self.fin("Égalité!")
+            else:
+                self.fin(f"{self.jeutab.gagnant} a gagné!")
+
+
+    def jouer_ordi(self):
+        if self.fin:
+            return None
+
+        if self.queltictac is not None:
+            tableau_actuel = self.tableau[self.queltictac]
+            mouvements_valides = []
+            for i in range(9):
+                if tableau_actuel[i] == "":
+                    mouvements_valides.append(self.queltictac, i)
+        else:
+            mouvements_valides = []
+            for i in self.tableau:
+                if self.grostictac[i] == "":  # tableau pas encore gagné
+                    for j in self.tableau[i]:
+                        if j == "":
+                            mouvements_valides.append((i, j))
+
+        if mouvements_valides:
+            return random.choice(mouvements_valides)
+        return None
+
+
 class Solutions(Jeutab):
     def __init__(self, ordi, boolordi):
         super().__init__()
         self.ordijoue = ordi #est-ce qu'il joue
         self.ordi = boolordi #bool de ce qu'il joue
 
+
+"""
     def evaluposition(self, derniermouv, jeu): #jeu serait un dico comme self.tableau mais d'une position qconque
         if derniermouv is None:
             return 0
@@ -786,7 +933,7 @@ class Solutions(Jeutab):
                 if position[i][j] == "":
                     vide.append((i,j))
 
-        return vide
+        return vide"""
 
 
 
