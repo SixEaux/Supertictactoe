@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6584dba0-daca-48a6-b6ee-a94a856ef136" name="Changes" comment="princip">
+      <change beforePath="$PROJECT_DIR$/Tiktak2.0.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tiktak2.0.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Einabessagnet&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/SixEaux/Supertictactoe.git&quot;,
+    &quot;accountId&quot;: &quot;3904a5c6-23a9-4301-9753-d2755a962cb1&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2pCCaTUpbe6GQQ9Bjr4g24Eoj0C" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Importpokedex.executor": "Run",
+    "Python.Tiktak2.0.executor": "Run",
+    "Python.tictac.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Tiktak2.0" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Supertictactoe" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Tiktak2.0.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23339.19" />
+        <option value="bundled-python-sdk-0029f7779945-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23339.19" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6584dba0-daca-48a6-b6ee-a94a856ef136" name="Changes" comment="" />
+      <created>1732260735958</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1732260735958</updated>
+      <workItem from="1732260738526" duration="11062000" />
+      <workItem from="1732529312044" duration="21782000" />
+      <workItem from="1732794018170" duration="8988000" />
+      <workItem from="1732898257488" duration="28720000" />
+      <workItem from="1733259806561" duration="5763000" />
+    </task>
+    <task id="LOCAL-00001" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732262379128</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1732262379128</updated>
+    </task>
+    <task id="LOCAL-00002" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732396360624</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1732396360624</updated>
+    </task>
+    <task id="LOCAL-00003" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732529434443</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1732529434443</updated>
+    </task>
+    <task id="LOCAL-00004" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732721593442</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1732721593442</updated>
+    </task>
+    <task id="LOCAL-00005" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732808235009</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1732808235009</updated>
+    </task>
+    <task id="LOCAL-00006" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732808342344</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1732808342344</updated>
+    </task>
+    <task id="LOCAL-00007" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732811097340</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1732811097340</updated>
+    </task>
+    <task id="LOCAL-00008" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732912848053</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1732912848053</updated>
+    </task>
+    <task id="LOCAL-00009" summary="princip">
+      <option name="closed" value="true" />
+      <created>1732912870488</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1732912870488</updated>
+    </task>
+    <task id="LOCAL-00010" summary="princip">
+      <option name="closed" value="true" />
+      <created>1733079626170</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1733079626170</updated>
+    </task>
+    <task id="LOCAL-00011" summary="princip">
+      <option name="closed" value="true" />
+      <created>1733081009551</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1733081009551</updated>
+    </task>
+    <task id="LOCAL-00012" summary="princip">
+      <option name="closed" value="true" />
+      <created>1733081224563</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1733081224563</updated>
+    </task>
+    <task id="LOCAL-00013" summary="princip">
+      <option name="closed" value="true" />
+      <created>1733081845400</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1733081845400</updated>
+    </task>
+    <task id="LOCAL-00014" summary="princip">
+      <option name="closed" value="true" />
+      <created>1733259201734</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1733259201734</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="princip" />
+    <option name="LAST_COMMIT_MESSAGE" value="princip" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Supertictactoe$Tiktak2_0.coverage" NAME="Tiktak2.0 Coverage Results" MODIFIED="1733265603048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Supertictactoe$Importpokedex.coverage" NAME="Importpokedex Coverage Results" MODIFIED="1733071860121" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Supertictactoe$tictac.coverage" NAME="tictac Coverage Results" MODIFIED="1732268620308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

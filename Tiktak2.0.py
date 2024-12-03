@@ -8,39 +8,72 @@ import pandas as pd
 from tkinter import Toplevel
 from PIL import Image, ImageTk
 
+from tkinter import Tk, Frame, Button, Label
+
 class Menujeu(Tk):
     def __init__(self, geometria, nbpokeparequipe):
         super().__init__()
         self.title("SuperTicTacToe")
+        self.geometry(geometria)
         self.geometria = geometria
         self.nbpokeparequipe = nbpokeparequipe
         self.modeordi = 1
-        self.modes = [1]
         self.campordi = True
-        self.joueurs = {True : "X", False : "O"}
-        self.menu()
+        self.joueurs = {True: "X", False: "O"}
+        self.menu_principal()
 
-    def menu(self):
-        menu = Frame(self)
-        menu.pack()
-        Label(menu, text="SuperTicTacToe").pack()
-        Button(menu, text='Multijoueur', command=lambda: self.allerau('jeu')).pack()
-        Button(menu, text='Multijoueur avec pokemon', command=lambda: self.allerau('pokemon')).pack()
-        Button(menu, text='Jouer seul sans pokemon', command=lambda: self.allerau('jouerseulsanspoke')).pack()
-        Button(menu, text='Quitter', command=self.quit).pack()
-        Button(menu, text='Changer mode ordi en aleatoire', command=lambda: self.changermode(1)).pack()
-        t = Button(menu, text=f'Ordi joue {self.joueurs[self.campordi]}')
-        t.config(command=lambda: self.changerval(t))
-        t.pack()
-        Button(menu, text='Jouer seul avec pokemon', command=lambda: self.allerau('jouerseulavecpoke')).pack()
+
+    def menu_principal(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        main_menu = Frame(self)
+        main_menu.pack()
+
+        Label(main_menu, text="SuperTicTacToe", font=("Helvetica", 24)).pack(pady=20)
+        Button(main_menu, text="Avec Pokémon", font=("Helvetica", 16), command=self.menu_pokemon).pack(pady=10)
+        Button(main_menu, text="Sans Pokémon", font=("Helvetica", 16), command=self.menu_sans_pokemon).pack(pady=10)
+        Button(main_menu, text="Quitter", font=("Helvetica", 16), command=self.quit).pack(pady=10)
+
+    def menu_pokemon(self):
+        self.afficher_menu("Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
+                                                    ("1 VS Ordi", lambda: self.allerau('jouerseulavecpoke'))],
+                           right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
+                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1))])
+
+    def menu_sans_pokemon(self):
+        self.afficher_menu("Sans Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('jeu')),
+                                                         ("1 VS Ordi", lambda: self.allerau('jouerseulsanspoke'))],
+                           right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
+                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1))])
+
+    def afficher_menu(self, title, left_buttons, right_buttons):
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        Label(self, text=title, font=("Helvetica", 24)).pack(pady=20)
+
+        button_frame = Frame(self)
+        button_frame.pack(fill="both", expand=True)
+
+        left_frame = Frame(button_frame)
+        left_frame.pack(side="left", fill="y", expand=True)
+        for text, command in left_buttons:
+            Button(left_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
+
+        right_frame = Frame(button_frame)
+        right_frame.pack(side="right", fill="y", expand=True)
+        for text, command in right_buttons:
+            Button(right_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
+
+        Button(self, text="Retour", font=("Helvetica", 16), command=self.menu_principal).pack(pady=20)
 
     def changermode(self, mode):
         self.modeordi = mode
 
-    def changerval(self, b):
+    def bouton_changerval(self):
         self.campordi = not self.campordi
-        b.config(text = f'Ordi joue {self.joueurs[self.campordi]}')
-        return
+        self.menu_pokemon() if self.title() == "Avec Pokémon" else self.menu_sans_pokemon()
 
     def allerau(self, enquoi):
         self.destroy()
@@ -52,6 +85,7 @@ class Menujeu(Tk):
             JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
+
 
 class Jeutab:
     def __init__(self):
