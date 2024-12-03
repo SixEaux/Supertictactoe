@@ -9,8 +9,8 @@ import pandas as pd
 # diet = pd.merge(data1[data1["Generation"] == 1] , data2, left_on = "Name", right_on = 'Pokemon', how = 'inner').drop(["Generation", "Pokemon", "NationalNumber"], axis = 1)
 # print(diet.info())
 
-data = pd.read_csv('pokedexbien.csv', header = 0)
-data["Level"] = 1 #Niveau des pokemon (tous à 1 au départ)
+data = pd.read_csv('pokedexbien.csv', header = 0, index_col = "Name")
+#data.to_csv("pokedexbien.csv", index = False)
+print(data.loc["Bulbasaur"]["Level"])
 
-data.to_csv("pokedexbien.csv", index = False)
-
+print(data)
