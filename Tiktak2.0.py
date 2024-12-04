@@ -867,61 +867,88 @@ class JouerSeulGraphsanspoke(Multijoueur):
                     elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
                         return -100
             return 0
-    def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
-        if self.jeutab.gagnegros():
-            return 10 - depth if is_ai_turn else depth - 10
-        elif self.jeutab.estceegalite(self.jeutab.grostictac):
-            return 0
-        best_score = -float('inf') if is_ai_turn else float('inf')
-        available_moves = self.casesvide(current_board)
-        for move in available_moves:
-            current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
-            score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
-            current_board[move] = ""
-            if is_ai_turn:
-                best_score = max(best_score, score)
-                alpha = max(alpha, score)
-            else:
-                best_score = min(best_score, score)
-                beta = min(beta, score)
 
-            if beta <= alpha:
-                break
+    def minmaxGrand(self, global_position, prof, joueur):
+        meilleur = [-1, float('-inf')] if joueur == self.ordijoue else [-1, float('inf')]
 
-        return best_score
+        if prof == 0 or self.gagnepetit2(global_position) or self.jeutab.estceegalite(
+                global_position) or not self.casesvide(global_position):
+            return [-1, self.evaluposition(global_position)]
 
-    def best_move(self):
-        if self.jeutab.queltictac is None:
-            available_moves = [
-                (board_index, move)
-                for board_index, sub_board in self.jeutab.tableau.items()
-                if self.jeutab.grostictac[board_index] == ""
-                for move in self.casesvide(sub_board)
-            ]
-        else:
-            board_index = self.jeutab.queltictac
-            available_moves = [
-                (board_index, move)
-                for move in self.casesvide(self.jeutab.tableau[board_index])
-            ]
+        for board_index in self.casesvide(global_position):
+            new_global_position = global_position.copy()
+            new_global_position[board_index] = joueur
 
-        best_score = -float('inf')
-        best_move = None
+            sub_board = self.jeutab.tableau[board_index]
+            sub_best_move = self.minimaxpetit(sub_board, prof - 1, joueur)
+            sub_score = sub_best_move[1]
 
-        for board_index, move in available_moves:
-            # position_copy = copy.deepcopy(self.jeutab.tableau) #je crois on en a besoin
-            self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
-            score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
-            self.jeutab.tableau[board_index][move] = ""
+            new_global_position[board_index] = joueur
+            res = self.minmaxGrand(new_global_position, prof - 1, not joueur)
+            res[0] = board_index
 
-            if score > best_score:
-                best_score = score
-                best_move = (board_index, move)
+            if joueur == self.ordijoue and res[1] > meilleur[1]:
+                meilleur = res
+            elif joueur == self.humain and res[1] < meilleur[1]:
+                meilleur = res
 
-        print(best_move)
-        self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
-        return best_move
+        return meilleur
 
+        # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
+    #     if self.jeutab.gagnegros():
+    #         return 10 - depth if is_ai_turn else depth - 10
+    #     elif self.jeutab.estceegalite(self.jeutab.grostictac):
+    #         return 0
+    #     best_score = -float('inf') if is_ai_turn else float('inf')
+    #     available_moves = self.casesvide(current_board)
+    #     for move in available_moves:
+    #         current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
+    #         score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
+    #         current_board[move] = ""
+    #         if is_ai_turn:
+    #             best_score = max(best_score, score)
+    #             alpha = max(alpha, score)
+    #         else:
+    #             best_score = min(best_score, score)
+    #             beta = min(beta, score)
+    #
+    #         if beta <= alpha:
+    #             break
+    #
+    #     return best_score
+    #
+    # def best_move(self):
+    #     if self.jeutab.queltictac is None:
+    #         available_moves = [
+    #             (board_index, move)
+    #             for board_index, sub_board in self.jeutab.tableau.items()
+    #             if self.jeutab.grostictac[board_index] == ""
+    #             for move in self.casesvide(sub_board)
+    #         ]
+    #     else:
+    #         board_index = self.jeutab.queltictac
+    #         available_moves = [
+    #             (board_index, move)
+    #             for move in self.casesvide(self.jeutab.tableau[board_index])
+    #         ]
+    #
+    #     best_score = -float('inf')
+    #     best_move = None
+    #
+    #     for board_index, move in available_moves:
+    #         # position_copy = copy.deepcopy(self.jeutab.tableau) #je crois on en a besoin
+    #         self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
+    #         score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
+    #         self.jeutab.tableau[board_index][move] = ""
+    #
+    #         if score > best_score:
+    #             best_score = score
+    #             best_move = (board_index, move)
+    #
+    #     print(best_move)
+    #     self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
+    #     return best_move
+    #
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
