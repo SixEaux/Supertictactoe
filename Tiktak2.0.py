@@ -893,18 +893,41 @@ class JouerSeulGraphsanspoke(Multijoueur):
         # Return the chosen move (object) from the moves array
         return moves[best_move]
 
-
     def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
+        print(f"Minimax call: is_ai_turn={is_ai_turn}, depth={depth}, alpha={alpha}, beta={beta}")  # Debugging output
+
         if self.jeutab.gagnegros():
+            print("Global board won.")  # Debugging output
             return 10 - depth if is_ai_turn else depth - 10
         elif self.jeutab.estceegalite(self.jeutab.grostictac):
+            print("Global board draw.")  # Debugging output
             return 0
+
         best_score = -float('inf') if is_ai_turn else float('inf')
-        available_moves = self.casesvide(current_board)
-        for move in available_moves:
-            current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
-            score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
-            current_board[move] = ""
+        available_moves = [
+            (board_index, move)
+            for board_index, sub_board in self.jeutab.tableau.items()
+            if self.jeutab.grostictac[board_index] == ""
+            for move in self.casesvide(sub_board)
+        ] if self.jeutab.queltictac is None else [
+            (self.jeutab.queltictac, move)
+            for move in self.casesvide(self.jeutab.tableau[self.jeutab.queltictac])
+        ]
+
+        print(f"Available moves at depth {depth}: {available_moves}")  # Debugging output
+
+        for board_index, move in available_moves:
+            self.jeutab.tableau[board_index][move] = \
+            self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
+
+            if self.jeutab.gagnepetit(board_index):
+                self.jeutab.grostictac[board_index] = \
+                self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
+
+            score = self.minimaxGrand(self.jeutab.tableau, not is_ai_turn, depth + 1, alpha, beta)
+            self.jeutab.tableau[board_index][move] = ""
+            self.jeutab.grostictac[board_index] = ""
+
             if is_ai_turn:
                 best_score = max(best_score, score)
                 alpha = max(alpha, score)
@@ -915,6 +938,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
             if beta <= alpha:
                 break
 
+        print(f"Best score at depth {depth}: {best_score}")  # Debugging output
         return best_score
 
     def best_move(self):
@@ -932,29 +956,48 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 for move in self.casesvide(self.jeutab.tableau[board_index])
             ]
 
+        print(f"Available moves: {available_moves}")  # Debugging output
         best_score = -float('inf')
         best_move = None
 
         for board_index, move in available_moves:
+            print(f"Evaluating move: sub-board {board_index}, position {move}")  # Debugging output
 
+            # Simulate the move
             self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
-            score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
+
+            if self.jeutab.gagnepetit(board_index):
+                self.jeutab.grostictac[board_index] = self.jeutab.joueurs[self.jeutab.quijoue][0]
+
+            # Evaluate the move
+            score = self.minimaxGrand(self.jeutab.tableau, False)
+            print(f"Score for move {move}: {score}")  # Debugging output
+
+            # Undo the move
             self.jeutab.tableau[board_index][move] = ""
+            self.jeutab.grostictac[board_index] = ""
 
             if score > best_score:
                 best_score = score
                 best_move = (board_index, move)
 
+        print(f"Best move: {best_move}, Best score: {best_score}")  # Debugging output
         return best_move
 
-
     def jouerordi(self):
-        if self.jeutab.quijoue == self.ordijoue:
-            if self.modeordi == 1:
-                self.aleatoire()
-        else:
-            pass
+        if self.jeutab.quijoue == self.ordijoue and not self.jeutab.fin:
+            print("AI's turn to play...")
 
+            # Use the new best_move method
+            best_move = self.best_move()
+
+            if best_move:
+                sub_board, position = best_move
+
+                # Simulate the AI's move
+                self.creerxo(self.butonsinv[(sub_board, position)])
+            else:
+                print("AI could not find a valid move (game might be over or an error occurred).")
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
