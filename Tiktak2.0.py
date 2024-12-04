@@ -893,12 +893,56 @@ class JouerSeulGraphsanspoke(Multijoueur):
         # Return the chosen move (object) from the moves array
         return moves[best_move]
 
+
+    def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
+        if self.jeutab.gagnegros():
+            return 10 - depth if is_ai_turn else depth - 10
+        elif self.jeutab.estceegalite(self.jeutab.grostictac):
+            return 0
+        best_score = -float('inf') if is_ai_turn else float('inf')
+        available_moves = self.casesvide(current_board)
+        for move in available_moves:
+            current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
+            self.minimax(current_board, not is_ai_turn, depth + 1, alpha, beta)
+            current_board[move] = ""
+        if is_ai_turn:
+            best_score = max(best_score, score)
+            alpha = max(alpha, score)
+        else:
+            best_score = min(best_score, score)
+            beta = min(beta, score)
+
+        if beta <= alpha:
+            break
+
+        return best_score
+
+    def best_move(self):
+
+        current_board = self.jeutab.tableau[self.jeutab.queltictac]
+        best_score = -float('inf')
+        best_move = None
+
+        for move in self.casesvide(current_board):
+            current_board[move] = self.jeutab.joueurs[self.jeutab.ordijoue][0]
+
+            score = self.minimaxGrand(current_board, False)
+            current_board[move] = ""
+
+            if score > best_score:
+                best_score = score
+                best_move = move
+
+        return best_moveurrent_board, False)
+
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
             if self.modeordi == 1:
+                best_move = self.best_move()
+                if best_move is not None:
+                    self.creerxo(self.butonsinv[best_move])
+            else:
                 self.aleatoire()
-        else:
-            pass
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
