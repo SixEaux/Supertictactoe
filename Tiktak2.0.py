@@ -903,7 +903,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
         available_moves = self.casesvide(current_board)
         for move in available_moves:
             current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
-            self.minimax(current_board, not is_ai_turn, depth + 1, alpha, beta)
+            score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
             current_board[move] = ""
             if is_ai_turn:
                 best_score = max(best_score, score)
@@ -918,31 +918,43 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return best_score
 
     def best_move(self):
+        if self.jeutab.queltictac is None:
+            available_moves = [
+                (board_index, move)
+                for board_index, sub_board in self.jeutab.tableau.items()
+                if self.jeutab.grostictac[board_index] == ""
+                for move in self.casesvide(sub_board)
+            ]
+        else:
+            board_index = self.jeutab.queltictac
+            available_moves = [
+                (board_index, move)
+                for move in self.casesvide(self.jeutab.tableau[board_index])
+            ]
 
-        current_board = self.jeutab.tableau[self.jeutab.queltictac]
         best_score = -float('inf')
         best_move = None
 
-        for move in self.casesvide(current_board):
-            current_board[move] = self.jeutab.joueurs[self.jeutab.ordijoue][0]
+        for board_index, move in available_moves:
 
-            score = self.minimaxGrand(current_board, False)
-            current_board[move] = ""
+            self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
+            score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
+            self.jeutab.tableau[board_index][move] = ""
 
             if score > best_score:
                 best_score = score
-                best_move = move
+                best_move = (board_index, move)
 
-        return (best_move)
+        return best_move
+
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
             if self.modeordi == 1:
-                best_move = self.best_move()
-                if best_move is not None:
-                    self.creerxo(self.butonsinv[best_move])
-            else:
                 self.aleatoire()
+        else:
+            pass
+
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
