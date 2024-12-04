@@ -933,7 +933,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 best_score = score
                 best_move = move
 
-        return (best_moveurrent_board, False)
+        return (best_move)
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
