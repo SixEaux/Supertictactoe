@@ -868,31 +868,33 @@ class JouerSeulGraphsanspoke(Multijoueur):
                         return -100
             return 0
 
-    def minmaxGrand(self, global_position, prof, joueur):
-        meilleur = [-1, float('-inf')] if joueur == self.ordijoue else [-1, float('inf')]
+    def minmaxGrand(self, joueur):
+        best_score = float('-inf')
+        best_move = None
 
-        if prof == 0 or self.gagnepetit2(global_position) or self.jeutab.estceegalite(
-                global_position) or not self.casesvide(global_position):
-            return [-1, self.evaluposition(global_position)]
+        if self.queltictac is None or self.gagnepetit(self.queltictac):
+            active_boards = [i for i in range(9) if self.grostictac[i] == ""]
+        else:
+            active_boards = [self.queltictac]
 
-        for board_index in self.casesvide(global_position):
-            new_global_position = global_position.copy()
-            new_global_position[board_index] = joueur
+        for board_index in active_boards:
+            for i in range(9):
+                if self.tableau[board_index][i] == "":
+                    self.tableau[board_index][i] = "O"
 
-            sub_board = self.jeutab.tableau[board_index]
-            sub_best_move = self.minimaxpetit(sub_board, prof - 1, joueur)
-            sub_score = sub_best_move[1]
+                    score = self.minimaxpetit(board_index, 0, not joueur)
 
-            new_global_position[board_index] = joueur
-            res = self.minmaxGrand(new_global_position, prof - 1, not joueur)
-            res[0] = board_index
+                    self.tableau[board_index][i] = ""
+                    if score > best_score:
+                        best_score = score
+                        best_move = (board_index, i)
 
-            if joueur == self.ordijoue and res[1] > meilleur[1]:
-                meilleur = res
-            elif joueur == self.humain and res[1] < meilleur[1]:
-                meilleur = res
-
-        return meilleur
+        if best_move:
+            board_index, move = best_move
+            self.tableau[board_index][move] = "O"
+            self.changetictac((board_index, move))
+            self.gagnegros()
+            self.printTableau()
 
         # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
     #     if self.jeutab.gagnegros():
