@@ -754,7 +754,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
         self.ordijoue = campordi #joue les x
         self.humain = not campordi
         self.modeordi = modeordi
-        self.prof = 2
+        self.prof = 5
         self.jouerordi()
 
     def aleatoire(self):
@@ -779,7 +779,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
 
     def jeuavecptiminimax(self):
         if self.jeutab.queltictac is None:
-            num = self.minimaxpetit(self.jeutab.grostictac, self.prof, self.jeutab.quijoue) # faire qu'il choissise où jouer en activant la fonction dans le gros tictac
+            num = self.minimaxpetit(self.jeutab.grostictac.copy(), self.prof, self.jeutab.quijoue) # faire qu'il choissise où jouer en activant la fonction dans le gros tictac
             new_board = copy.deepcopy(self.jeutab.tableau[num[0]])
             choix = self.minimaxpetit(new_board, self.prof, self.jeutab.quijoue)
             self.creerxo(self.butonsinv[(num[0], choix[0])])
@@ -800,17 +800,17 @@ class JouerSeulGraphsanspoke(Multijoueur):
         if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
             return [-1, self.evaluposition(position)]
 
-        print("_____________________________")
+        # print("_____________________________")
 
-        print(self.casesvide(position))
+        # print(self.casesvide(position))
 
         for case in self.casesvide(position):
             pos = position.copy()
             pos[case] = self.jeutab.joueurs[joueur][0]
             res = self.minimaxpetit(pos, prof-1, not joueur)
             res[0] = case
-            print(res)
-            print(pos)
+            # print(res)
+            # print(pos)
             if joueur == self.ordijoue and res[1] > meilleur[1]:
                 meilleur = res
             elif joueur == self.humain and res[1] < meilleur[1]:
