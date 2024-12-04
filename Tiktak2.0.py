@@ -8,6 +8,8 @@ import copy
 from tkinter import Toplevel
 from PIL import Image, ImageTk
 from tkinter import Tk, Frame, Button, Label
+from itertools import cycle
+
 
 class Menujeu(Tk):
     def __init__(self, geometria, nbpokeparequipe):
@@ -16,9 +18,12 @@ class Menujeu(Tk):
         self.geometry(geometria)
         self.geometria = geometria
         self.nbpokeparequipe = nbpokeparequipe
-        self.modeordi = 1
+        self.modes = cycle([1,2,3])
+        self.modeordi = next(self.modes)
         self.campordi = True
         self.joueurs = {True: "X", False: "O"}
+        self.txt = StringVar()
+        self.txt.set(f"Niveau {self.modeordi}")
         self.menu_principal()
 
 
@@ -38,13 +43,13 @@ class Menujeu(Tk):
         self.afficher_menu("Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
                                                     ("1 VS Ordi", lambda: self.allerau('jouerseulavecpoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
-                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1))])
+                                          ("Changer mode ordi", lambda: self.changermode())])
 
     def menu_sans_pokemon(self):
         self.afficher_menu("Sans Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('jeu')),
                                                          ("1 VS Ordi", lambda: self.allerau('jouerseulsanspoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
-                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1)), ("Changer mode ordi en minimax", lambda: self.changermode(2))])
+                                          ("Changer mode ordi", lambda: self.changermode())])
 
     def afficher_menu(self, title, left_buttons, right_buttons):
         for widget in self.winfo_children():
@@ -65,10 +70,13 @@ class Menujeu(Tk):
         for text, command in right_buttons:
             Button(right_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
 
+        Label(right_frame, font=("Helvetica", 14), textvariable=self.txt).pack(pady=5)
+
         Button(self, text="Retour", font=("Helvetica", 16), command=self.menu_principal).pack(pady=20)
 
-    def changermode(self, mode):
-        self.modeordi = mode
+    def changermode(self):
+        self.modeordi = next(self.modes)
+        self.txt.set(f"Niveau {self.modeordi}")
 
     def bouton_changerval(self):
         self.campordi = not self.campordi
@@ -918,7 +926,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 best_score = score
                 best_move = (board_index, move)
 
-        print(best_move)
         self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
         return best_move
 
@@ -929,6 +936,8 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 self.aleatoire()
             if self.modeordi == 2:
                 self.jeuavecptiminimax()
+            if self.modeordi == 3:
+                self.minimaxGrand()
         else:
             pass
 
