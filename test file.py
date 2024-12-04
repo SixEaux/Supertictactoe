@@ -50,5 +50,40 @@ def pokemon_combat(Pokemon1, Pokemon2):
         print ("Both Pokémon survived!")
         return ("DRAW")
 
-print(pokemon_combat("Pidgey", "Gastly"))
+print(pokemon_combat("Paras", "Charmander"))
 
+def combat_probability_safe(pokemon1, pokemon2, simulations=10):
+    pokemon1_wins = 0
+    for _ in range(simulations):
+        result = pokemon_combat(pokemon1, pokemon2)
+        if pokemon1 in result:
+            pokemon1_wins += 1
+    return pokemon1_wins / simulations
+import os
+
+# Create output directory
+os.makedirs('output_directory', exist_ok=True)
+
+# Generate the corrected probability matrix
+limited_pokemon_names = pokedex.index.tolist()
+probability_matrix_safe = pd.DataFrame(index=limited_pokemon_names, columns=limited_pokemon_names)
+
+for p1 in limited_pokemon_names:
+    for p2 in limited_pokemon_names:
+        print(f"Processing: {p1} vs {p2}")  # Debug log
+        if p1 != p2:
+            try:
+                probability_matrix_safe.at[p1, p2] = combat_probability_safe(p1, p2)
+            except Exception as e:
+                print(f"Error processing {p1} vs {p2}: {e}")
+                probability_matrix_safe.at[p1, p2] = None
+        else:
+            probability_matrix_safe.at[p1, p2] = 0.5
+    # Save progress periodically
+    probability_matrix_safe.to_csv('output_directory/pokemon_battle_probabilities_safe_partial.csv')
+
+# Save the final CSV
+output_path_safe = 'output_directory/pokemon_battle_probabilities_safe1.csv'
+probability_matrix_safe.to_csv(output_path_safe)
+
+print(f"File saved at: {output_path_safe}")
