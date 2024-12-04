@@ -905,15 +905,15 @@ class JouerSeulGraphsanspoke(Multijoueur):
             current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
             self.minimax(current_board, not is_ai_turn, depth + 1, alpha, beta)
             current_board[move] = ""
-        if is_ai_turn:
-            best_score = max(best_score, score)
-            alpha = max(alpha, score)
-        else:
-            best_score = min(best_score, score)
-            beta = min(beta, score)
+            if is_ai_turn:
+                best_score = max(best_score, score)
+                alpha = max(alpha, score)
+            else:
+                best_score = min(best_score, score)
+                beta = min(beta, score)
 
-        if beta <= alpha:
-            break
+            if beta <= alpha:
+                break
 
         return best_score
 
@@ -933,7 +933,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 best_score = score
                 best_move = move
 
-        return best_moveurrent_board, False)
+        return (best_moveurrent_board, False)
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
