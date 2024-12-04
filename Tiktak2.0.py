@@ -7,7 +7,6 @@ import pandas as pd
 import copy
 from tkinter import Toplevel
 from PIL import Image, ImageTk
-
 from tkinter import Tk, Frame, Button, Label
 
 class Menujeu(Tk):
@@ -85,7 +84,6 @@ class Menujeu(Tk):
             JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
-
 
 class Jeutab:
     def __init__(self):
