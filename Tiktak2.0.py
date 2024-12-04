@@ -747,63 +747,6 @@ class MultijoueurPokemon(Tk):
             self.postofrm[self.jeutab.queltictac].config(highlightbackground="grey", highlightthickness=2)
         self.jeutab.rejouer()
 
-class Solutions(Jeutab):
-    def __init__(self, ordi, boolordi):
-        super().__init__()
-        self.ordijoue = ordi #est-ce qu'il joue
-        self.ordi = boolordi #bool de ce qu'il joue
-
-    def minimax(self, derniermouv, position, profondeur, aquitour):
-        ponctuation = self.evaluposition(derniermouv, position)
-
-        if ponctuation == 10:
-            return ponctuation
-
-        if ponctuation == -10:
-            return ponctuation
-
-        if self.estceegalite(position.keys()):
-            return 0
-
-        copiepos = position.deepcopy()
-
-        if self.ordijoue:
-            meilleur = -1000
-            vide = self.casesvides(position)
-            for case in vide:
-
-                copiepos[case[0]][case[1]] = self.joueurs[self.ordi][0]
-
-                meilleur = max(meilleur, self.minimax((case[0], case[1]), copiepos,profondeur+1, not self.ordijoue))
-
-                copiepos[case[0]][case[1]] = ""
-
-            return meilleur
-
-        elif not self.ordijoue:
-            meilleur = 1000
-            vide = self.casesvides(position)
-            for case in vide:
-                copiepos[case[0]][case[1]] = self.joueurs[not self.ordi][0]
-
-                meilleur = min(meilleur, self.minimax((case[0], case[1]), copiepos, profondeur + 1, not self.ordijoue))
-
-                copiepos[case[0]][case[1]] = ""
-
-            return meilleur
-
-        else:
-            print("OOOOPPPPS")
-
-
-    def casesvides(self, position):
-        vide = []
-        for i in range(9):
-            for j in range(9):
-                if position[i][j] == "":
-                    vide.append((i,j))
-        return vide
-
 class JouerSeulGraphsanspoke(Multijoueur):
     def __init__(self, geometria, nbpokeparequipe, modeordi, campordi):
         super().__init__(geometria, nbpokeparequipe)
@@ -811,6 +754,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
         self.ordijoue = campordi #joue les x
         self.humain = not campordi
         self.modeordi = modeordi
+        self.prof = 2
         self.jouerordi()
 
     def aleatoire(self):
@@ -835,13 +779,13 @@ class JouerSeulGraphsanspoke(Multijoueur):
 
     def jeuavecptiminimax(self):
         if self.jeutab.queltictac is None:
-            num = self.minimaxpetit(self.jeutab.grostictac, 5, self.jeutab.quijoue) # faire qu'il choissise où jouer en activant la fonction dans le gros tictac
+            num = self.minimaxpetit(self.jeutab.grostictac, self.prof, self.jeutab.quijoue) # faire qu'il choissise où jouer en activant la fonction dans le gros tictac
             new_board = copy.deepcopy(self.jeutab.tableau[num[0]])
-            choix = self.minimaxpetit(new_board, 5, self.jeutab.quijoue)
+            choix = self.minimaxpetit(new_board, self.prof, self.jeutab.quijoue)
             self.creerxo(self.butonsinv[(num[0], choix[0])])
         else:
             new_board = copy.deepcopy(self.jeutab.tableau[self.jeutab.queltictac])
-            choix = self.minimaxpetit(new_board, 5, self.ordijoue)
+            choix = self.minimaxpetit(new_board, self.prof, self.ordijoue)
             self.creerxo(self.butonsinv[(self.jeutab.queltictac, choix[0])])
 
     def gagnepetit2(self, tab):
@@ -856,11 +800,17 @@ class JouerSeulGraphsanspoke(Multijoueur):
         if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
             return [-1, self.evaluposition(position)]
 
+        print("_____________________________")
+
+        print(self.casesvide(position))
+
         for case in self.casesvide(position):
             pos = position.copy()
-            pos[case] = joueur
+            pos[case] = self.jeutab.joueurs[joueur][0]
             res = self.minimaxpetit(pos, prof-1, not joueur)
             res[0] = case
+            print(res)
+            print(pos)
             if joueur == self.ordijoue and res[1] > meilleur[1]:
                 meilleur = res
             elif joueur == self.humain and res[1] < meilleur[1]:
@@ -868,106 +818,30 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return meilleur
 
     def evaluposition(self, position):
-            for i in self.jeutab.gagne:
-                if position[i[0]] == position[i[1]] == position[i[2]] != "":
-                    if position[i[0]] == self.jeutab.joueurs[self.ordijoue][0]:
-                        return 100
-                    elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
-                        return -100
-            return 0
+            score = 0
+            for ligne in self.jeutab.gagne:
+                # Vérifier si une ligne est partiellement occupée
+                valeurs = [position[i] for i in ligne]
+                if valeurs.count(self.jeutab.joueurs[self.ordijoue][0]) == 2 and valeurs.count("") == 1:
+                    score += 10  # Bonus pour une ligne presque gagnée
+                elif valeurs.count(self.jeutab.joueurs[self.humain][0]) == 2 and valeurs.count("") == 1:
+                    score -= 10  # Malus si l'humain peut gagner
 
-    def minmaxGrand(self, joueur):
-        best_score = float('-inf')
-        best_move = None
+                # Vérifier si une ligne est gagnante
+                if valeurs.count(self.jeutab.joueurs[self.ordijoue][0]) == 3:
+                    return 100
+                elif valeurs.count(self.jeutab.joueurs[self.humain][0]) == 3:
+                    return -100
 
-        if self.queltictac is None or self.gagnepetit(self.queltictac):
-            active_boards = [i for i in range(9) if self.grostictac[i] == ""]
-        else:
-            active_boards = [self.queltictac]
-
-        for board_index in active_boards:
-            for i in range(9):
-                if self.tableau[board_index][i] == "":
-                    self.tableau[board_index][i] = "O"
-
-                    score = self.minimaxpetit(board_index, 0, not joueur)
-
-                    self.tableau[board_index][i] = ""
-                    if score > best_score:
-                        best_score = score
-                        best_move = (board_index, i)
-
-        if best_move:
-            board_index, move = best_move
-            self.tableau[board_index][move] = "O"
-            self.changetictac((board_index, move))
-            self.gagnegros()
-            self.printTableau()
-
-        # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
-    #     if self.jeutab.gagnegros():
-    #         return 10 - depth if is_ai_turn else depth - 10
-    #     elif self.jeutab.estceegalite(self.jeutab.grostictac):
-    #         return 0
-    #     best_score = -float('inf') if is_ai_turn else float('inf')
-    #     available_moves = self.casesvide(current_board)
-    #     for move in available_moves:
-    #         current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
-    #         score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
-    #         current_board[move] = ""
-    #         if is_ai_turn:
-    #             best_score = max(best_score, score)
-    #             alpha = max(alpha, score)
-    #         else:
-    #             best_score = min(best_score, score)
-    #             beta = min(beta, score)
-    #
-    #         if beta <= alpha:
-    #             break
-    #
-    #     return best_score
-    #
-    # def best_move(self):
-    #     if self.jeutab.queltictac is None:
-    #         available_moves = [
-    #             (board_index, move)
-    #             for board_index, sub_board in self.jeutab.tableau.items()
-    #             if self.jeutab.grostictac[board_index] == ""
-    #             for move in self.casesvide(sub_board)
-    #         ]
-    #     else:
-    #         board_index = self.jeutab.queltictac
-    #         available_moves = [
-    #             (board_index, move)
-    #             for move in self.casesvide(self.jeutab.tableau[board_index])
-    #         ]
-    #
-    #     best_score = -float('inf')
-    #     best_move = None
-    #
-    #     for board_index, move in available_moves:
-    #         # position_copy = copy.deepcopy(self.jeutab.tableau) #je crois on en a besoin
-    #         self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
-    #         score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
-    #         self.jeutab.tableau[board_index][move] = ""
-    #
-    #         if score > best_score:
-    #             best_score = score
-    #             best_move = (board_index, move)
-    #
-    #     print(best_move)
-    #     self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
-    #     return best_move
-    #
-
+            return score
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
             if self.modeordi == 1:
                 self.aleatoire()
             if self.modeordi == 2:
                 self.jeuavecptiminimax()
-            if self.modeordi == 3:
-                self.minimaxGrand()
+            # if self.modeordi == 3:
+            #     self.minimaxGrand()
         else:
             pass
 
@@ -995,6 +869,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
 
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
                                           highlightthickness=2)
