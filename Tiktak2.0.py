@@ -876,33 +876,87 @@ class JouerSeulGraphsanspoke(Multijoueur):
                         return -100
             return 0
 
-    def minmaxGrand(self, joueur):
+    def check_winner(self, board):
+        for pattern in self.jeutab.gagne:
+            a, b, c = pattern
+            if board[a] and board[a] == board[b] == board[c]:
+                return board[a]
+        return "Tie" if "" not in board else None
+
+    def minimax(self, board, depth, is_maximizing):
+        winner = self.check_winner(board)
+        if winner == "O":
+            return 10 - depth
+        if winner == "X":
+            return depth - 10
+        if winner == "Tie":
+            return 0
+
+        if is_maximizing:
+            best_score = float('-inf')
+            for i in range(9):
+                if board[i] == "":
+                    board[i] = "O"
+                    score = self.minimax(board, depth + 1, False)
+                    board[i] = ""
+                    best_score = max(score, best_score)
+            return best_score
+        else:
+            best_score = float('inf')
+            for i in range(9):
+                if board[i] == "":
+                    board[i] = "X"
+                    score = self.minimax(board, depth + 1, True)
+                    board[i] = ""
+                    best_score = min(score, best_score)
+            return best_score
+
+    def minmaxGrand(self):
         best_score = float('-inf')
         best_move = None
 
-        if self.queltictac is None or self.gagnepetit(self.queltictac):
-            active_boards = [i for i in range(9) if self.grostictac[i] == ""]
+        if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
+            active_boards = [i for i in range(9) if self.jeutab.grostictac[i] == ""]
         else:
-            active_boards = [self.queltictac]
+            active_boards = [self.jeutab.queltictac]
 
         for board_index in active_boards:
             for i in range(9):
-                if self.tableau[board_index][i] == "":
-                    self.tableau[board_index][i] = "O"
-
-                    score = self.minimaxpetit(board_index, 0, not joueur)
-
-                    self.tableau[board_index][i] = ""
+                if self.jeutab.tableau[board_index][i] == "":
+                    self.jeutab.tableau[board_index][i] = "O"
+                    score = self.minimax(self.jeutab.tableau[board_index], 0, False)
+                    self.jeutab.tableau[board_index][i] = ""
                     if score > best_score:
                         best_score = score
                         best_move = (board_index, i)
 
-        if best_move:
-            board_index, move = best_move
-            self.tableau[board_index][move] = "O"
-            self.changetictac((board_index, move))
-            self.gagnegros()
-            self.printTableau()
+        return best_move, best_score
+
+    def jeuminmaxGrand(self):
+        if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
+            best_move, _ = self.minmaxGrand()
+            if best_move:
+                board_index, move_index = best_move
+                button = self.butonsinv.get((board_index, move_index))
+                if button:
+                    self.creerxo(button)
+        else:
+            new_board = self.jeutab.tableau[self.jeutab.queltictac]
+            best_score = float('-inf')
+            best_move = None
+            for i in range(9):
+                if new_board[i] == "":
+                    new_board[i] = "O"
+                    score = self.minimax(new_board, 0, False)
+                    new_board[i] = ""
+                    if score > best_score:
+                        best_score = score
+                        best_move = i
+            if best_move is not None:
+                move_index = best_move
+                button = self.butonsinv.get((self.jeutab.queltictac, move_index))
+                if button:
+                    self.creerxo(button)
 
         # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
     #     if self.jeutab.gagnegros():
@@ -967,7 +1021,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
             if self.modeordi == 2:
                 self.jeuavecptiminimax()
             if self.modeordi == 3:
-                self.minimaxGrand()
+                self.jeuminmaxGrand()
         else:
             pass
 
