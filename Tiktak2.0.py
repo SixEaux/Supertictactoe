@@ -44,7 +44,7 @@ class Menujeu(Tk):
         self.afficher_menu("Sans Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('jeu')),
                                                          ("1 VS Ordi", lambda: self.allerau('jouerseulsanspoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
-                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1))])
+                                          ("Changer mode ordi en aléatoire", lambda: self.changermode(1)), ("Changer mode ordi en minimax", lambda: self.changermode(2))])
 
     def afficher_menu(self, title, left_buttons, right_buttons):
         for widget in self.winfo_children():
@@ -745,26 +745,6 @@ class Solutions(Jeutab):
         self.ordijoue = ordi #est-ce qu'il joue
         self.ordi = boolordi #bool de ce qu'il joue
 
-    def evaluposition(self, derniermouv, jeu): #jeu serait un dico comme self.tableau mais d'une position qconque
-        if derniermouv is None:
-            return 0
-        else:
-            cles = jeu.keys()
-            for i in self.gagne:
-                if cles[i[0]] == cles[i[1]] == cles[i[2]] != "":
-                    if cles[i[0]] == self.joueurs[self.ordijoue][0]:
-                        return 100
-                    elif cles[i[0]] == self.joueurs[not self.ordijoue][0]:
-                        return -100
-
-            # tictac = derniermouv[1]
-            # for i in self.gagne:
-            #     if jeu[tictac][i[0]] == jeu[tictac][i[1]] == jeu[tictac][i[2]] != "":
-            #         if jeu[tictac][i[0]] == self.ordi:
-            #             return 10
-            #         elif jeu[tictac][i[0]] == self.autre:
-            #             return -10
-
     def minimax(self, derniermouv, position, profondeur, aquitour):
         ponctuation = self.evaluposition(derniermouv, position)
 
@@ -825,13 +805,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
         self.modeordi = modeordi
         self.jouerordi()
 
-    def casesvide(self, tab):
-        vide = []
-        for i in range(9):
-            if tab[i] == "":
-                vide.append(i)
-        return vide
-
     def aleatoire(self):
         if self.jeutab.fin:
             return
@@ -845,55 +818,55 @@ class JouerSeulGraphsanspoke(Multijoueur):
             choix = (self.jeutab.queltictac, choixpetit)
             self.creerxo(self.butonsinv[(choix[0], choix[1])])
 
-    def minimaxpetit(self, player):
-        new_board = self.jeutab.tableau[self.jeutab.queltictac].copy()
-        avail_spots = self.casesvide(self.jeutab.tableau[self.jeutab.queltictac])  # Available spots
+    def casesvide(self, tab):
+        vide = []
+        for i in range(9):
+            if tab[i] == "":
+                vide.append(i)
+        return vide
 
-        if any(self.jeutab.tableau[i[0]] == self.jeutab.tableau[i[1]] == self.jeutab.tableau[i[2]] == self.jeutab.joueurs[self.humain][0] for i in self.jeutab.gagne):
-            return {"score": -10}
-        elif any(self.jeutab.tableau[i[0]] == self.jeutab.tableau[i[1]] == self.jeutab.tableau[i[2]] == self.jeutab.joueurs[self.ordijoue][0] for i in self.jeutab.gagne):
-            return {"score": 10}
-        elif len(avail_spots) == 0:
-            return {"score": 0}
-
-        moves = []  # here we store all the poosible moves and their score
-
-        for i in avail_spots:
-
-            move = {"index": new_board[i]}  # I create a new dictionary
-
-            new_board[i] = player  # this is just a simulation to test if I put a player here what will happen
-
-            if player == ai_player:  # we get the scores with the minmax
-                result = minimax(new_board, hu_player)
-                move["score"] = result["score"]
-            else:
-                result = self.minimaxpetit(ai_player)
-                move["score"] = result["score"]
-
-            # we reset the spot to empty and we append it to our available moves
-            new_board[i] = move["index"]
-
-            moves.append(move)
-
-        # here we choose the best move
-        best_move = None
-        if player == ai_player:
-            best_score = -10000000000000000000000000000000000000000000  # I use a very low score and try to find a better score
-            for i in range(len(moves)):
-                if moves[i]["score"] > best_score:
-                    best_score = moves[i]["score"]
-                    best_move = i
+    def jeuavecptiminimax(self):
+        if self.jeutab.queltictac is None:
+            num = self.minimaxpetit(self.jeutab.grostictac, 5, self.jeutab.quijoue) # faire qu'il choissise où jouer en activant la fonction dans le gros tictac
+            new_board = copy.deepcopy(self.jeutab.tableau[num[0]])
+            choix = self.minimaxpetit(new_board, 5, self.jeutab.quijoue)
+            self.creerxo(self.butonsinv[(num[0], choix[0])])
         else:
-            best_score = 1000000000000000000000000000000000000000000000000  # I do the inverse
-            for i in range(len(moves)):
-                if moves[i]["score"] < best_score:
-                    best_score = moves[i]["score"]
-                    best_move = i
-        # Return the chosen move (object) from the moves array
-        return moves[best_move]
+            new_board = copy.deepcopy(self.jeutab.tableau[self.jeutab.queltictac])
+            choix = self.minimaxpetit(new_board, 5, self.ordijoue)
+            self.creerxo(self.butonsinv[(self.jeutab.queltictac, choix[0])])
 
+    def gagnepetit2(self, tab):
+        for i in self.jeutab.gagne:
+            if tab[i[0]] == tab[i[1]] == tab[i[2]] != "":
+                return True
+        return False
 
+    def minimaxpetit(self, position, prof, joueur):
+        meilleur = [-1, float('-inf')] if joueur == self.ordijoue else [-1, float('inf')]
+
+        if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
+            return [-1, self.evaluposition(position)]
+
+        for case in self.casesvide(position):
+            pos = position.copy()
+            pos[case] = joueur
+            res = self.minimaxpetit(pos, prof-1, not joueur)
+            res[0] = case
+            if joueur == self.ordijoue and res[1] > meilleur[1]:
+                meilleur = res
+            elif joueur == self.humain and res[1] < meilleur[1]:
+                meilleur = res
+        return meilleur
+
+    def evaluposition(self, position):
+            for i in self.jeutab.gagne:
+                if position[i[0]] == position[i[1]] == position[i[2]] != "":
+                    if position[i[0]] == self.jeutab.joueurs[self.ordijoue][0]:
+                        return 100
+                    elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
+                        return -100
+            return 0
     def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
         if self.jeutab.gagnegros():
             return 10 - depth if is_ai_turn else depth - 10
@@ -936,7 +909,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
         best_move = None
 
         for board_index, move in available_moves:
-
+            # position_copy = copy.deepcopy(self.jeutab.tableau) #je crois on en a besoin
             self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
             score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
             self.jeutab.tableau[board_index][move] = ""
@@ -945,6 +918,8 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 best_score = score
                 best_move = (board_index, move)
 
+        print(best_move)
+        self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
         return best_move
 
 
@@ -952,9 +927,10 @@ class JouerSeulGraphsanspoke(Multijoueur):
         if self.jeutab.quijoue == self.ordijoue:
             if self.modeordi == 1:
                 self.aleatoire()
+            if self.modeordi == 2:
+                self.jeuavecptiminimax()
         else:
             pass
-
 
     def tourdejeu(self, mouv):
         posfrm = mouv[0]
