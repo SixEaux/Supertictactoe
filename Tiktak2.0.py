@@ -36,7 +36,7 @@ class Menujeu(Tk):
         Button(main_menu, text="Quitter", font=("Helvetica", 16), command=self.quit).pack(pady=10)
 
     def menu_pokemon(self):
-        self.afficher_menu("Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
+        self.afficher_menu("Avec Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
                                                     ("1 VS Ordi", lambda: self.allerau('jouerseulavecpoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
                                           ("Changer mode ordi en aléatoire", lambda: self.changermode(1))])
@@ -59,12 +59,20 @@ class Menujeu(Tk):
         left_frame = Frame(button_frame)
         left_frame.pack(side="left", fill="y", expand=True)
         for text, command in left_buttons:
-            Button(left_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
+            if text.startswith("Ordi joue"):
+                self.bouton_campordi = Button(left_frame, text=text, font=("Helvetica", 14), command=command)
+                self.bouton_campordi.pack(pady=5)
+            else:
+                Button(left_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
 
         right_frame = Frame(button_frame)
         right_frame.pack(side="right", fill="y", expand=True)
         for text, command in right_buttons:
-            Button(right_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
+            if text.startswith("Ordi joue"):
+                self.bouton_campordi = Button(right_frame, text=text, font=("Helvetica", 14), command=command)
+                self.bouton_campordi.pack(pady=5)
+            else:
+                Button(right_frame, text=text, font=("Helvetica", 14), command=command).pack(pady=5)
 
         Button(self, text="Retour", font=("Helvetica", 16), command=self.menu_principal).pack(pady=20)
 
@@ -73,7 +81,7 @@ class Menujeu(Tk):
 
     def bouton_changerval(self):
         self.campordi = not self.campordi
-        self.menu_pokemon() if self.title() == "Avec Pokémon" else self.menu_sans_pokemon()
+        self.bouton_campordi.config(text=f"Ordi joue {self.joueurs[self.campordi]}")
 
     def allerau(self, enquoi):
         self.destroy()
