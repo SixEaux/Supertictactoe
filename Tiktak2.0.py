@@ -843,7 +843,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
 
 
     def check_winner(self, board):
-        """Checks if there's a winner or a tie in a given board."""
         for pattern in self.jeutab.gagne:
             a, b, c = pattern
             if board[a] and board[a] == board[b] == board[c]:
@@ -851,7 +850,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return "Tie" if "" not in board else None
 
     def check_threat(self, board, player):
-        """Check if the player is one move away from winning."""
         for pattern in self.jeutab.gagne:
             a, b, c = pattern
             if board[a] == player and board[b] == player and board[c] == "":
@@ -863,7 +861,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return None
 
     def evaluate_position(self, board, player):
-        """Enhanced evaluation function to favor AI strategies."""
         winner = self.check_winner(board)
         if winner == "O":
             return 1000  # AI wins
@@ -873,7 +870,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
             return 0  # Tie
 
         score = 0
-        # Add weight for creating double threats and blocking opponent's threats
         for pattern in self.jeutab.gagne:
             a, b, c = pattern
             line = [board[a], board[b], board[c]]
