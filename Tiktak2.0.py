@@ -818,23 +818,13 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return meilleur
 
     def evaluposition(self, position):
-            score = 0
-            for ligne in self.jeutab.gagne:
-                # Vérifier si une ligne est partiellement occupée
-                valeurs = [position[i] for i in ligne]
-                if valeurs.count(self.jeutab.joueurs[self.ordijoue][0]) == 2 and valeurs.count("") == 1:
-                    score += 10  # Bonus pour une ligne presque gagnée
-                elif valeurs.count(self.jeutab.joueurs[self.humain][0]) == 2 and valeurs.count("") == 1:
-                    score -= 10  # Malus si l'humain peut gagner
-
-                # Vérifier si une ligne est gagnante
-                if valeurs.count(self.jeutab.joueurs[self.ordijoue][0]) == 3:
+        for i in self.jeutab.gagne:
+            if position[i[0]] == position[i[1]] == position[i[2]] != "":
+                if position[i[0]] == self.jeutab.joueurs[self.ordijoue][0]:
                     return 100
-                elif valeurs.count(self.jeutab.joueurs[self.humain][0]) == 3:
+                elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
                     return -100
-
-            return score
-
+        return 0
 
 #############################################################################################################################
     #LAHNE YABDA LCOOOODE
