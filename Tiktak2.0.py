@@ -906,12 +906,14 @@ class JouerSeulGraphsanspoke(Multijoueur):
         return None
 
     def minimax(self, board, depth, is_maximizing, max_depth=5):
+        if depth >= max_depth:
+            return 0
         winner = self.check_winner(board)
         if winner == "O":
             return 1000 - depth
         if winner == "X":
             return depth - 1000
-        if winner == "Tie" or depth >= max_depth:
+        if winner == "Tie":
             return 0
 
         if is_maximizing:
@@ -936,17 +938,12 @@ class JouerSeulGraphsanspoke(Multijoueur):
     def minmaxGrand(self):
         best_score = float('-inf')
         best_move = None
-
         if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
             active_boards = [i for i in range(9) if self.jeutab.grostictac[i] == ""]
         else:
             active_boards = [self.jeutab.queltictac]
 
         for board_index in active_boards:
-            threat = self.check_threat(self.jeutab.tableau[board_index], "X")
-            if threat is not None:
-                return (board_index, threat), 1000
-
             for i in range(9):
                 if self.jeutab.tableau[board_index][i] == "":
                     self.jeutab.tableau[board_index][i] = "O"
@@ -957,7 +954,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
                         best_move = (board_index, i)
 
         return best_move, best_score
-
     def jeuminmaxGrand(self):
         if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
             best_move, _ = self.minmaxGrand()
