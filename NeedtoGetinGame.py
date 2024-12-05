@@ -222,13 +222,12 @@ def take_input(state, bot_move):
 
 
 def box_cell_to_row_col(box, cell):
-    box_row = box // 3  # The row of the box in the grid
-    box_col = box % 3  # The column of the box in the grid
+    box_row = box // 3
+    box_col = box % 3
 
-    cell_row = cell // 3  # The row of the cell within the box
-    cell_col = cell % 3  # The column of the cell within the box
+    cell_row = cell // 3
+    cell_col = cell % 3
 
-    # Combine the box and cell positions to calculate the grid row and column
     row = box_row * 3 + cell_row + 1
     col = box_col * 3 + cell_col + 1
 
@@ -236,10 +235,8 @@ def box_cell_to_row_col(box, cell):
 
 
 def get_box_and_cell(row, col):
-    # Calculate the box number
     box = (row // 3) * 3 + (col // 3)
 
-    # Calculate the cell number within the box
     cell = (row % 3) * 3 + (col % 3)
 
     return box, cell
@@ -265,12 +262,10 @@ def game(state="." * 81, depth=20):
             print("Game Stopped!")
             break
 
-        # User makes their move
         user_state = add_piece(state, user_move, "X")
         print_board(user_state)
         box_won = update_box_won(user_state)
 
-        # Check if the user won
         game_won = check_small_box(box_won)
         if game_won != ".":
             state = user_state
@@ -278,34 +273,22 @@ def game(state="." * 81, depth=20):
 
         print("Please wait, Bot is thinking...")
         s_time = time()
-
-        # Bot calculates its move
         bot_state, bot_move = minimax(user_state, user_move, "O", depth, s_time)
-
-        # Convert the bot's move (linear index) into row and column
         bot_row, bot_col = divmod(bot_move, 9)  # 0-based indices for row and column
-
-        # Calculate the box and cell for the bot's move
         bot_box, bot_cell = get_box_and_cell(bot_row, bot_col)  # Use 0-based row and column
-
-        # Correct Row and Column Calculation
         actual_row = (bot_box // 3) * 3 + (bot_cell // 3)
         actual_col = (bot_box % 3) * 3 + (bot_cell % 3)
 
         print("#" * 40)
         print(f"Bot placed 'O' in  Box  {actual_row}, Cell {actual_col}  (Row  {bot_box} and Column {bot_cell})\n")
 
-        # Print the board after the bot's move
         print_board(bot_state)
-
-        # Update the state and check for a winner
         state = bot_state
         box_won = update_box_won(bot_state)
         game_won = check_small_box(box_won)
         if game_won != ".":
             break
 
-    # Final message
     if game_won == "X":
         print("$$$$$ Congratulations YOU WIN! $$$$$")
     else:
