@@ -876,6 +876,58 @@ class JouerSeulGraphsanspoke(Multijoueur):
                         return -100
             return 0
 
+
+#############################################################################################################################
+    #LAHNE YABDA LCOOOODE
+
+
+
+
+    def check_winner(self, board):
+        """Checks if there's a winner or a tie in a given board."""
+        for pattern in self.jeutab.gagne:
+            a, b, c = pattern
+            if board[a] and board[a] == board[b] == board[c]:
+                return board[a]
+        return "Tie" if "" not in board else None
+
+    def check_threat(self, board, player):
+        """Check if the player is one move away from winning."""
+        for pattern in self.jeutab.gagne:
+            a, b, c = pattern
+            if board[a] == player and board[b] == player and board[c] == "":
+                return c
+            if board[a] == player and board[c] == player and board[b] == "":
+                return b
+            if board[b] == player and board[c] == player and board[a] == "":
+                return a
+        return None
+
+    def evaluate_position(self, board, player):
+        """Enhanced evaluation function to favor AI strategies."""
+        winner = self.check_winner(board)
+        if winner == "O":
+            return 1000  # AI wins
+        if winner == "X":
+            return -1000  # Human wins
+        if winner == "Tie":
+            return 0  # Tie
+
+        score = 0
+        # Add weight for creating double threats and blocking opponent's threats
+        for pattern in self.jeutab.gagne:
+            a, b, c = pattern
+            line = [board[a], board[b], board[c]]
+            if line.count("O") == 2 and line.count("") == 1:  # AI about to win
+                score += 100
+            if line.count("X") == 2 and line.count("") == 1:  # Human about to win
+                score -= 100
+            if line.count("O") == 1 and line.count("") == 2:  # AI potential double threat
+                score += 10
+            if line.count("X") == 1 and line.count("") == 2:  # Block human double threat
+                score -= 10
+        return score
+
     def check_winner(self, board):
         for pattern in self.jeutab.gagne:
             a, b, c = pattern
@@ -883,13 +935,24 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 return board[a]
         return "Tie" if "" not in board else None
 
-    def minimax(self, board, depth, is_maximizing):
+    def check_threat(self, board, player):
+        for pattern in self.jeutab.gagne:
+            a, b, c = pattern
+            if board[a] == player and board[b] == player and board[c] == "":
+                return c
+            if board[a] == player and board[c] == player and board[b] == "":
+                return b
+            if board[b] == player and board[c] == player and board[a] == "":
+                return a
+        return None
+
+    def minimax(self, board, depth, is_maximizing, max_depth=5):
         winner = self.check_winner(board)
         if winner == "O":
-            return 10 - depth
+            return 1000 - depth
         if winner == "X":
-            return depth - 10
-        if winner == "Tie":
+            return depth - 1000
+        if winner == "Tie" or depth >= max_depth:
             return 0
 
         if is_maximizing:
@@ -897,7 +960,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
             for i in range(9):
                 if board[i] == "":
                     board[i] = "O"
-                    score = self.minimax(board, depth + 1, False)
+                    score = self.minimax(board, depth + 1, False, max_depth)
                     board[i] = ""
                     best_score = max(score, best_score)
             return best_score
@@ -906,7 +969,7 @@ class JouerSeulGraphsanspoke(Multijoueur):
             for i in range(9):
                 if board[i] == "":
                     board[i] = "X"
-                    score = self.minimax(board, depth + 1, True)
+                    score = self.minimax(board, depth + 1, True, max_depth)
                     board[i] = ""
                     best_score = min(score, best_score)
             return best_score
@@ -921,10 +984,14 @@ class JouerSeulGraphsanspoke(Multijoueur):
             active_boards = [self.jeutab.queltictac]
 
         for board_index in active_boards:
+            threat = self.check_threat(self.jeutab.tableau[board_index], "X")
+            if threat is not None:
+                return (board_index, threat), 1000
+
             for i in range(9):
                 if self.jeutab.tableau[board_index][i] == "":
                     self.jeutab.tableau[board_index][i] = "O"
-                    score = self.minimax(self.jeutab.tableau[board_index], 0, False)
+                    score = self.minimax(self.jeutab.tableau[board_index], 0, False, max_depth=5)
                     self.jeutab.tableau[board_index][i] = ""
                     if score > best_score:
                         best_score = score
@@ -942,21 +1009,33 @@ class JouerSeulGraphsanspoke(Multijoueur):
                     self.creerxo(button)
         else:
             new_board = self.jeutab.tableau[self.jeutab.queltictac]
-            best_score = float('-inf')
-            best_move = None
-            for i in range(9):
-                if new_board[i] == "":
-                    new_board[i] = "O"
-                    score = self.minimax(new_board, 0, False)
-                    new_board[i] = ""
-                    if score > best_score:
-                        best_score = score
-                        best_move = i
-            if best_move is not None:
-                move_index = best_move
-                button = self.butonsinv.get((self.jeutab.queltictac, move_index))
-                if button:
-                    self.creerxo(button)
+            threat = self.check_threat(new_board, "X")
+            if threat is not None:
+                move_index = threat
+            else:
+                best_score = float('-inf')
+                best_move = None
+                for i in range(9):
+                    if new_board[i] == "":
+                        new_board[i] = "O"
+                        score = self.minimax(new_board, 0, False, max_depth=1)
+                        new_board[i] = ""
+                        if score > best_score:
+                            best_score = score
+                            best_move = i
+
+                if best_move is not None:
+                    move_index = best_move
+
+            button = self.butonsinv.get((self.jeutab.queltictac, move_index))
+            if button:
+                self.creerxo(button)
+
+
+#YOUFA LENNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+
+
 
         # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
     #     if self.jeutab.gagnegros():
