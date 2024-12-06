@@ -80,7 +80,9 @@ class Menujeu(Tk):
 
     def bouton_changerval(self):
         self.campordi = not self.campordi
-        self.menu_pokemon() if self.title() == "Avec Pokémon" else self.menu_sans_pokemon()
+        # widg = event.widget
+        # widg.config(text=f"Ordi joue {self.joueurs[self.campordi]}")
+
 
     def allerau(self, enquoi):
         self.destroy()
