@@ -1055,12 +1055,12 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
 
     def choixordi(self, pokegag):
         poke = self.probaspoke.loc[pokegag]
-        pokeligne = poke[poke >= 0.5].to_dict()
-        print(pokeligne)
+        pokeligne = poke[poke >= 0.8].to_dict()
+        print(pokeligne.keys())
         equipeset = set(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
         print(equipeset)
-        inter = pokeligne.keys.interse(equipeset)
-        return random.choice(inter) if inter else random.choice(self.jeutab.joueurs[self.ordi][0])
+        inter = set(pokeligne.keys()).intersection(equipeset)
+        return random.choice(list(inter)) if inter else random.choice(self.jeutab.joueurs[self.ordi][0])
 
     def rejouer(self):
         for i in self.postofrm:
