@@ -24,6 +24,8 @@ class Menujeu(Tk):
         self.joueurs = {True: "X", False: "O"}
         self.txt = StringVar()
         self.txt.set(f"Niveau {self.modeordi}")
+        self.tctcamp = StringVar()
+        self.tctcamp.set(self.joueurs[self.campordi])
         self.menu_principal()
 
 
@@ -48,7 +50,7 @@ class Menujeu(Tk):
     def menu_sans_pokemon(self):
         self.afficher_menu("Sans Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('jeu')),
                                                          ("1 VS Ordi", lambda: self.allerau('jouerseulsanspoke'))],
-                           right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
+                           right_buttons=[(self.tctcamp.get(), self.bouton_changerval),
                                           ("Changer mode ordi", lambda: self.changermode())])
 
     def afficher_menu(self, title, left_buttons, right_buttons):
@@ -80,9 +82,7 @@ class Menujeu(Tk):
 
     def bouton_changerval(self):
         self.campordi = not self.campordi
-        # widg = event.widget
-        # widg.config(text=f"Ordi joue {self.joueurs[self.campordi]}")
-
+        self.tctcamp.set(self.joueurs[self.campordi])
 
     def allerau(self, enquoi):
         self.destroy()
