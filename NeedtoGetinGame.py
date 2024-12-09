@@ -74,8 +74,7 @@ def possible_moves(last_move):
         possible_indices = idxs
     return possible_indices
 
-
-def successors(state, player, last_move):
+def successors(state, player, last_move): #
     succ = []
     moves_idx = []
     possible_indexes = possible_moves(last_move)
@@ -95,7 +94,7 @@ def opponent(p):
     return "O" if p == "X" else "X"
 
 
-def evaluate_small_box(box_str, player):
+def evaluate_small_box(box_str, player): #
     global possible_goals
     score = 0
     three = Counter(player * 3)
@@ -126,7 +125,7 @@ def evaluate_small_box(box_str, player):
     return score
 
 
-def evaluate(state, last_move, player):
+def evaluate(state, last_move, player): #
     global box_won
     score = 0
     score += evaluate_small_box(box_won, player) * 200
@@ -137,7 +136,7 @@ def evaluate(state, last_move, player):
     return score
 
 
-def minimax(state, last_move, player, depth, s_time):
+def minimax(state, last_move, player, depth, s_time): #
     succ = successors(state, player, last_move)
     best_move = (-inf, None)
     for s in succ:
@@ -150,7 +149,7 @@ def minimax(state, last_move, player, depth, s_time):
     return best_move[1]
 
 
-def min_turn(state, last_move, player, depth, s_time, alpha, beta):
+def min_turn(state, last_move, player, depth, s_time, alpha, beta): #
     global box_won
     if depth <= 0 or check_small_box(box_won) != ".":  # or time() - s_time >= 10:
         return evaluate(state, last_move, opponent(player))
@@ -165,7 +164,7 @@ def min_turn(state, last_move, player, depth, s_time, alpha, beta):
     return beta
 
 
-def max_turn(state, last_move, player, depth, s_time, alpha, beta):
+def max_turn(state, last_move, player, depth, s_time, alpha, beta): #
     global box_won
     if depth <= 0 or check_small_box(box_won) != ".":  # or time() - s_time >= 20:
         return evaluate(state, last_move, player)
