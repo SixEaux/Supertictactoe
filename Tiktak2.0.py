@@ -99,6 +99,7 @@ class Menujeu(Tk):
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
 
+
 class Jeutab:
     def __init__(self):
         self.joueurs = {True :("X", "red", "indianred", PhotoImage(file = r"Pokeball_rouge.png").subsample(15, 15)),
@@ -712,12 +713,22 @@ class MultijoueurPokemon(Tk):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                          highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
 
         self.jeutab.choixpoke = None
 
@@ -1040,14 +1051,22 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
                                           highlightthickness=2)
-
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
         self.jeutab.choixpoke = None
 
         self.jouerordi()
