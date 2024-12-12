@@ -826,8 +826,6 @@ class JouerSeulGraphsanspoke(Multijoueur): #jouer contre l'ordi sans pokemons
             res = self.minimaxpetit(pos, prof-1, not joueur, alpha, beta) #on trouve le meilleur mouvement et score a partir de la
             res[0] = case
             pos[case] = ""
-            print("_____________________________________")
-            print(res)
             if joueur == self.ordijoue:
                 if res[1] > meilleur[1]: #si c'est le tour de l'ordi on maximise
                     meilleur = res
@@ -843,15 +841,6 @@ class JouerSeulGraphsanspoke(Multijoueur): #jouer contre l'ordi sans pokemons
 
         return meilleur
 
-    def evaluposition(self, position): #fonction d'evaluation qui peut etre beaucoup plus amelioree juste on regarde qui a gagne
-        for i in self.jeutab.gagne:
-            if position[i[0]] == position[i[1]] == position[i[2]] != "":
-                if position[i[0]] == self.jeutab.joueurs[self.ordijoue][0]:
-                    return 100
-                elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
-                    return -100
-        return 0
-
     def evaluposition2(self, position): #fonction d'evauation meilleure
         score = 0
         three = Counter(self.jeutab.joueurs[self.ordijoue][0] * 3)
@@ -866,17 +855,17 @@ class JouerSeulGraphsanspoke(Multijoueur): #jouer contre l'ordi sans pokemons
             current = Counter([position[x], position[y], position[z]])
 
             if current == three:
-                score += 100000
+                score += 1000
             elif current == two:
                 score += 100
             elif current == one:
-                score += 1
+                score += 10
             elif current == three_opponent:
-                score -= 1000000
+                score -= 1000
             elif current == two_opponent:
                 score -= 100
             elif current == one_opponent:
-                score -= 1
+                score -= 10
 
         return score
 
@@ -1037,17 +1026,17 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon): #jouer contre l'ordi avec des 
             current = Counter([position[x], position[y], position[z]])
 
             if current == three:
-                score += 100000
+                score += 1000
             elif current == two:
                 score += 100
             elif current == one:
-                score += 1
+                score += 10
             elif current == three_opponent:
-                score -= 1000000
+                score -= 1000
             elif current == two_opponent:
                 score -= 100
             elif current == one_opponent:
-                score -= 1
+                score -= 10
 
         return score
 
