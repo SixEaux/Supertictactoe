@@ -806,10 +806,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
         if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
             return [-1, self.evaluposition(position)]
 
-        # print("_____________________________")
-
-        # print(self.casesvide(position))
-
         for case in self.casesvide(position):
             pos = position.copy()
             pos[case] = self.jeutab.joueurs[joueur][0]
