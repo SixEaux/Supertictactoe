@@ -1,3 +1,12 @@
+def tableau_to_string(self):
+    board_string = ""
+    for small_board in range(9):
+        for cell in range(9):
+            cell_value = self.jeutab.tableau[small_board][cell]
+            board_string += cell_value if cell_value else "."
+    return board_string
+
+
 from math import inf
 from collections import Counter
 import itertools
@@ -245,7 +254,6 @@ def game(state="." * 81, depth=20):
 
         # User makes a move
         user_state = add_piece(state, user_move, "X")
-        print_board(user_state)
         box_won = update_box_won(user_state)
 
         # Check if user has won
@@ -255,7 +263,6 @@ def game(state="." * 81, depth=20):
             break
 
         # Bot's turn
-        print("Please wait, Bot is thinking...")
         s_time = time()
         bot_state, bot_move = minimax(user_state, user_move, "O", depth, s_time)
 
@@ -265,7 +272,6 @@ def game(state="." * 81, depth=20):
 
         print("#" * 40)
         print(f"Bot placed 'O' in Box {bot_box}, Cell {bot_cell}\n")
-        print_board(bot_state)
 
         # Update the state and check if bot has won
         state = bot_state
