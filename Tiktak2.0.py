@@ -226,13 +226,13 @@ class JeutabPokemon(Jeutab): #classe pour avoir a jour le dictionnaire qui sert 
         Pokemon2 = self.pokedex.loc[pokemon2]
         random_factor = random.uniform(0.85, 1.0)  # we use a random factor between 85% and 100%
         type1 = Pokemon1["Type_1"]
-        if not pd.isnull(Pokemon1["Type_2"]):
+        if not pd.isnull(Pokemon1["Type_2"]): #some pokemons only have one typr
             type2 = Pokemon1["Type_2"]
             mc = Pokemon2[type1] * Pokemon2[type2] * random_factor
         else:
             mc = Pokemon2[type1] * random_factor
-        damage = (((((Pokemon1["Level"] * 0.4 + 2) * Pokemon1["Attack"]) / Pokemon2["Defense"]) / 50) + 2) * mc * 10
-        return max(damage, 1)  # pokeons cant deal less than 0 damage
+        damage = (((((Pokemon1["Level"] * 0.4 + 2) * Pokemon1["Attack"]) / Pokemon2["Defense"]) / 50) + 2) * mc * 10 # the link the professor put didnt work so I found this formula on google
+        return max(damage, 1)  # pokeons cant deal less than 0 damage because if so we can be stuck in a loop
 
     def pokemon_combat(self,mouv, poke):
         pokemon11 = self.pokedex.loc[self.pokemonutilise[mouv[0]][mouv[1]]]
@@ -242,14 +242,14 @@ class JeutabPokemon(Jeutab): #classe pour avoir a jour le dictionnaire qui sert 
         HP1 = pokemon11["HP"]
         HP2 = pokemon22["HP"]
 
-        while HP1 > 0 and HP2 > 0:
+        while HP1 > 0 and HP2 > 0: #the pokemons keep fighting until one or both faint, also they both attack at the same time
             damage1 = self.calculate_damage(pokemon1_name, pokemon2_name)
             damage2 = self.calculate_damage(pokemon2_name, pokemon1_name)
 
             HP1 -= damage2
             HP2 -= damage1
 
-        # Determine the result
+        # We want to check who will win and who will lose
         if HP1 <= 0 and HP2 <= 0:
             print("Both fainted! its a draw.")
             return "Egalite"

@@ -74,7 +74,8 @@ def possible_moves(last_move):
         possible_indices = idxs
     return possible_indices
 
-def successors(state, player, last_move): #
+
+def successors(state, player, last_move):
     succ = []
     moves_idx = []
     possible_indexes = possible_moves(last_move)
@@ -94,7 +95,7 @@ def opponent(p):
     return "O" if p == "X" else "X"
 
 
-def evaluate_small_box(box_str, player): #
+def evaluate_small_box(box_str, player):
     global possible_goals
     score = 0
     three = Counter(player * 3)
@@ -116,7 +117,7 @@ def evaluate_small_box(box_str, player): #
             score += 1
         elif current == three_opponent:
             score -= 100
-            return score
+
         elif current == two_opponent:
             score -= 10
         elif current == one_opponent:
@@ -125,7 +126,7 @@ def evaluate_small_box(box_str, player): #
     return score
 
 
-def evaluate(state, last_move, player): #
+def evaluate(state, last_move, player):
     global box_won
     score = 0
     score += evaluate_small_box(box_won, player) * 200
@@ -136,7 +137,7 @@ def evaluate(state, last_move, player): #
     return score
 
 
-def minimax(state, last_move, player, depth, s_time): #
+def minimax(state, last_move, player, depth, s_time):
     succ = successors(state, player, last_move)
     best_move = (-inf, None)
     for s in succ:
@@ -149,7 +150,7 @@ def minimax(state, last_move, player, depth, s_time): #
     return best_move[1]
 
 
-def min_turn(state, last_move, player, depth, s_time, alpha, beta): #
+def min_turn(state, last_move, player, depth, s_time, alpha, beta):
     global box_won
     if depth <= 0 or check_small_box(box_won) != ".":  # or time() - s_time >= 10:
         return evaluate(state, last_move, opponent(player))
@@ -164,7 +165,7 @@ def min_turn(state, last_move, player, depth, s_time, alpha, beta): #
     return beta
 
 
-def max_turn(state, last_move, player, depth, s_time, alpha, beta): #
+def max_turn(state, last_move, player, depth, s_time, alpha, beta):
     global box_won
     if depth <= 0 or check_small_box(box_won) != ".":  # or time() - s_time >= 20:
         return evaluate(state, last_move, player)
@@ -199,7 +200,6 @@ def take_input(state, bot_move):
     if all_open_flag:
         print("Play anywhere you want!")
         box = int(input("Choose a box (0-8): "))
-        cell = int(input("Choose a cell within the box (0-8): "))
     else:
         box_dict = {0: "Upper Left", 1: "Upper Center", 2: "Upper Right",
                     3: "Center Left", 4: "Center", 5: "Center Right",
@@ -207,41 +207,23 @@ def take_input(state, bot_move):
         print("Where would you like to place 'X' in ~"
               + box_dict[next_box(bot_move)] + "~ box?")
         box = next_box(bot_move)
-        cell = int(input("Choose a cell within the box (0-8): "))
 
-    # Convert box and cell to grid coordinates
-    x, y = box_cell_to_row_col(box, cell)
+    cell = int(input("Choose a cell within the box (0-8): "))
+    print("")
 
-    if bot_move != -1 and index(x, y) not in possible_moves(bot_move):
+    # Convert box and cell to row and column
+    row = (box // 3) * 3 + (cell // 3) + 1
+    col = (box % 3) * 3 + (cell % 3) + 1
+
+    if bot_move != -1 and index(row, col) not in possible_moves(bot_move):
         raise ValueError
-    if not valid_input(state, (x, y)):
+    if not valid_input(state, (row, col)):
         raise ValueError
-
-    return x, y
-
-
-def box_cell_to_row_col(box, cell):
-    box_row = box // 3
-    box_col = box % 3
-
-    cell_row = cell // 3
-    cell_col = cell % 3
-
-    row = box_row * 3 + cell_row + 1
-    col = box_col * 3 + cell_col + 1
 
     return row, col
 
 
-def get_box_and_cell(row, col):
-    box = (row // 3) * 3 + (col // 3)
-
-    cell = (row % 3) * 3 + (col % 3)
-
-    return box, cell
-
-
-def game(state="." * 81, depth=20 ):
+def game(state="." * 81, depth=20):
     global box_won, possible_goals
     possible_goals = [(0, 4, 8), (2, 4, 6)]
     possible_goals += [(i, i + 3, i + 6) for i in range(3)]
@@ -261,27 +243,31 @@ def game(state="." * 81, depth=20 ):
             print("Game Stopped!")
             break
 
+        # User makes a move
         user_state = add_piece(state, user_move, "X")
         print_board(user_state)
         box_won = update_box_won(user_state)
 
+        # Check if user has won
         game_won = check_small_box(box_won)
         if game_won != ".":
             state = user_state
             break
 
+        # Bot's turn
         print("Please wait, Bot is thinking...")
         s_time = time()
         bot_state, bot_move = minimax(user_state, user_move, "O", depth, s_time)
-        bot_row, bot_col = divmod(bot_move, 9)  # 0-based indices for row and column
-        bot_box, bot_cell = get_box_and_cell(bot_row, bot_col)  # Use 0-based row and column
-        actual_row = (bot_box // 3) * 3 + (bot_cell // 3)
-        actual_col = (bot_box % 3) * 3 + (bot_cell % 3)
+
+        # Convert bot_move index to box and cell
+        bot_box = bot_move // 9
+        bot_cell = bot_move % 9
 
         print("#" * 40)
-        print(f"Bot placed 'O' in  Box  {actual_row}, Cell {actual_col}  (Row  {bot_box} and Column {bot_cell})\n")
-
+        print(f"Bot placed 'O' in Box {bot_box}, Cell {bot_cell}\n")
         print_board(bot_state)
+
+        # Update the state and check if bot has won
         state = bot_state
         box_won = update_box_won(bot_state)
         game_won = check_small_box(box_won)
