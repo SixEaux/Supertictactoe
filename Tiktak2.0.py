@@ -969,10 +969,12 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon): #jouer contre l'ordi avec des 
 
     def choixordi(self, pokegag): #choix pokemon ordi en fonction du dataframe de probas
         poke = self.probaspoke.loc[pokegag]
-        pokeligne = poke[poke >= 0.8].to_dict()
+        pokeligne = poke[poke <= 0.2].to_dict()
+        print(pokeligne)
         equipeset = set(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
         inter = set(pokeligne.keys()).intersection(equipeset)
-        return random.choice(list(inter)) if inter else random.choice(self.jeutab.joueurs[self.ordi][0])
+        print(list(inter))
+        return list(inter)[0] if inter else random.choice(self.jeutab.joueurs[self.ordi][0])
 
     def jeuavecptiminimax(self): #pareil qu'avant pour jouer avec minimax sur les petits
         if self.jeutab.queltictac is None:
@@ -991,34 +993,63 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon): #jouer contre l'ordi avec des 
                 return True
         return False
 
-    def minimaxpetit(self, position, prof, joueur): #pareil quavant
-        meilleur = [-1, float('-inf')] if joueur == self.ordi else [-1, float('inf')]
+    def minimaxpetit(self, position, prof, joueur, alpha = float("-inf"),  beta = float("inf")): #minimax pas tres fort qui joue dans les petits tictactoes
+        meilleur = [-1, float('-inf')] if joueur == self.ordi else [-1, float('inf')] #on initialise meilleur mouvement avec une liste mouvement,score
 
-        if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
-            return [-1, self.evaluposition(position)]
+        if self.gagnepetit2(position) or prof == 0 or self.jeutab.estceegalite(position) or not self.casesvide(position): #si la profondeur est atteinte alors on s'arrete
+            return [-1, self.evaluposition2(position)-prof] if joueur == self.ordi else [-1, self.evaluposition2(position)+prof]
 
-        elif len(self.casesvide(position)) == 9:
+        elif prof==self.prof and len(self.casesvide(position)) == 9: #si il y a tout vide on choisi au hasard entre les coins comme ca pas gagne si vite
             return [random.choice([0,2,6,8]), 0]
 
-        for case in self.casesvide(position):
+        for case in self.casesvide(position): #parcours des cases vides
             pos = position.copy()
-            pos[case] = self.jeutab.joueurs[joueur][0]
-            res = self.minimaxpetit(pos, prof-1, not joueur)
+            pos[case] = self.jeutab.joueurs[joueur][0] #on pose le joueur dans la case
+            res = self.minimaxpetit(pos, prof-1, not joueur, alpha, beta) #on trouve le meilleur mouvement et score a partir de la
             res[0] = case
-            if joueur == self.ordi and res[1] >= meilleur[1]:
-                meilleur = res
-            elif joueur == self.humain and res[1] <= meilleur[1]:
-                meilleur = res
+            pos[case] = ""
+            if joueur == self.ordi:
+                if res[1] > meilleur[1]: #si c'est le tour de l'ordi on maximise
+                    meilleur = res
+                alpha = max(meilleur[1], alpha)
+
+            elif joueur == self.humain:
+                if res[1] < meilleur[1]: #si tour du joueur on minimise
+                    meilleur = res
+                beta = min(meilleur[1], beta)
+
+            if beta <= alpha:
+                break
+
         return meilleur
 
-    def evaluposition(self, position): #pareil qu'avant
-        for i in self.jeutab.gagne:
-            if position[i[0]] == position[i[1]] == position[i[2]] != "":
-                if position[i[0]] == self.jeutab.joueurs[self.ordi][0]:
-                    return 100
-                elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
-                    return -100
-        return 0
+    def evaluposition2(self, position):  # fonction d'evauation meilleure
+        score = 0
+        three = Counter(self.jeutab.joueurs[self.ordi][0] * 3)
+        two = Counter(self.jeutab.joueurs[self.ordi][0] * 2 + "")
+        one = Counter(self.jeutab.joueurs[self.ordi][0] * 1 + "" * 2)
+        three_opponent = (self.jeutab.joueurs[self.humain][0] * 3)
+        two_opponent = Counter(self.jeutab.joueurs[self.humain][0] * 2 + "")
+        one_opponent = Counter(self.jeutab.joueurs[self.humain][0] * 1 + "" * 2)
+
+        for idxs in self.jeutab.gagne:
+            (x, y, z) = idxs
+            current = Counter([position[x], position[y], position[z]])
+
+            if current == three:
+                score += 100000
+            elif current == two:
+                score += 100
+            elif current == one:
+                score += 1
+            elif current == three_opponent:
+                score -= 1000000
+            elif current == two_opponent:
+                score -= 100
+            elif current == one_opponent:
+                score -= 1
+
+        return score
 
     def mouvementpoke(self, buton, p=None): #faire le mouvement dans les deux cas si humain ou si ordi
         if self.jeutab.quijoue == self.humain: #si l'humain on fait comme dans multijoueur
