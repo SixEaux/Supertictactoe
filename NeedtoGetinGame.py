@@ -241,7 +241,7 @@ def get_box_and_cell(row, col):
     return box, cell
 
 
-def game(state="." * 81, depth=20):
+def game(state="." * 81, depth=20 ):
     global box_won, possible_goals
     possible_goals = [(0, 4, 8), (2, 4, 6)]
     possible_goals += [(i, i + 3, i + 6) for i in range(3)]
