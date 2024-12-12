@@ -24,8 +24,8 @@ class Menujeu(Tk):
         self.joueurs = {True: "X", False: "O"}
         self.txt = StringVar()
         self.txt.set(f"Niveau {self.modeordi}")
+        self.boobool = None
         self.menu_principal()
-
 
     def menu_principal(self):
         for widget in self.winfo_children():
@@ -40,16 +40,18 @@ class Menujeu(Tk):
         Button(main_menu, text="Quitter", font=("Helvetica", 16), command=self.quit).pack(pady=10)
 
     def menu_pokemon(self):
-        self.afficher_menu("Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
+        self.afficher_menu("Avec Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
                                                     ("1 VS Ordi", lambda: self.allerau('jouerseulavecpoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
                                           ("Changer mode ordi", lambda: self.changermode())])
+        self.boobool = True
 
     def menu_sans_pokemon(self):
         self.afficher_menu("Sans Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('jeu')),
                                                          ("1 VS Ordi", lambda: self.allerau('jouerseulsanspoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
                                           ("Changer mode ordi", lambda: self.changermode())])
+        self.boobool = False
 
     def afficher_menu(self, title, left_buttons, right_buttons):
         for widget in self.winfo_children():
@@ -72,7 +74,11 @@ class Menujeu(Tk):
 
         Label(right_frame, font=("Helvetica", 14), textvariable=self.txt).pack(pady=5)
 
-        Button(self, text="Retour", font=("Helvetica", 16), command=self.menu_principal).pack(pady=20)
+        Button(self, text="Retour", font=("Helvetica", 16), command=self.retour).pack(pady=20)
+
+    def retour(self):
+        self.menu_principal()
+        self.boobool = None
 
     def changermode(self):
         self.modeordi = next(self.modes)
@@ -80,7 +86,7 @@ class Menujeu(Tk):
 
     def bouton_changerval(self):
         self.campordi = not self.campordi
-        self.menu_pokemon() if self.title() == "Avec Pokémon" else self.menu_sans_pokemon()
+        self.menu_pokemon() if self.boobool else self.menu_sans_pokemon()
 
     def allerau(self, enquoi):
         self.destroy()
@@ -92,6 +98,7 @@ class Menujeu(Tk):
             JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
+
 
 class Jeutab:
     def __init__(self):
@@ -551,7 +558,7 @@ class MultijoueurPokemon(Tk):
             frame.columnconfigure(self.positionspossibles[p][1], weight=1, uniform="column1")
             b = Button(frame, borderwidth=1, background="white", foreground="black")
             b.config(command=lambda a=b: self.mouvementpoke(a), height=int(self.height),
-                     width=int(self.width))  # une autre option serait de utiliser bind
+                     width=int(self.width))
             b.grid(row=self.positionspossibles[p][0], column=self.positionspossibles[p][1], padx=2, pady=2,
                    sticky="nsew")
             self.butons[b] = (self.postofrm.index(frame), p)
@@ -706,12 +713,22 @@ class MultijoueurPokemon(Tk):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                          highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
 
         self.jeutab.choixpoke = None
 
@@ -800,10 +817,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
         if prof == 0 or self.gagnepetit2(position) or self.jeutab.estceegalite(position) or not self.casesvide(position):
             return [-1, self.evaluposition(position)]
 
-        # print("_____________________________")
-
-        # print(self.casesvide(position))
-
         for case in self.casesvide(position):
             pos = position.copy()
             pos[case] = self.jeutab.joueurs[joueur][0]
@@ -825,180 +838,6 @@ class JouerSeulGraphsanspoke(Multijoueur):
                 elif position[i[0]] == self.jeutab.joueurs[self.humain][0]:
                     return -100
         return 0
-
-#############################################################################################################################
-    #LAHNE YABDA LCOOOODE
-
-    from math import inf
-    from collections import Counter
-    import itertools
-    from time import time
-
-    TIME_LIMIT = 5
-
-    # Define global variables
-    possible_goals = [
-        (0, 4, 8), (2, 4, 6),
-        (0, 1, 2), (3, 4, 5), (6, 7, 8),
-        (0, 3, 6), (1, 4, 7), (2, 5, 8)
-    ]
-    box_won = ["."] * 9
-
-    def successors(self, player,tab,bigtab):
-        succ = []
-        moves_idx = []
-        possibleindxgros = self.casesvide(Bcop)
-        possiblemoves = [self.casesvide(cop[i]) for i in range(0, 9)]
-
-        for Gidx in possibleindxgros:
-            for Pidx in possiblemoves[Gidx]:
-                moves_idx.append((Gidx,Pidx))
-                succ.append((cop)
-        return zip(succ, moves_idx)
-
-
-
-    def evaluate_small_box(tab, player):
-        global possible_goals
-        score = 0
-        three = Counter(player * 3)
-        two = Counter(player * 2 + ".")
-        one = Counter(player * 1 + "." * 2)
-        three_opponent = Counter(opponent(player) * 3)
-        two_opponent = Counter(opponent(player) * 2 + ".")
-        one_opponent = Counter(opponent(player) * 1 + "." * 2)
-
-        for idxs in possible_goals:
-            (x, y, z) = idxs
-            current = Counter([tab[x], tab[y], tab[z]])
-
-            if current == three:
-                score += 100
-            elif current == two:
-                score += 10
-            elif current == one:
-                score += 1
-            elif current == three_opponent:
-                score -= 100
-
-            elif current == two_opponent:
-                score -= 10
-            elif current == one_opponent:
-                score -= 1
-
-        return score
-
-    def evaluate(state, player):
-        global box_won
-        score = 0
-        score += evaluate_small_box(box_won, player) * 200
-        for b in range(9):
-            idxs = indices_of_box(b)
-            box_str = state[idxs[0]: idxs[-1] + 1]
-            score += evaluate_small_box(box_str, player)
-        return score
-
-    def minimax(self, player, depth, s_time):
-        cop = copy.deepcopy(self.jeutab.tableau)
-        Bcop = copy.deepcopy(self.jeutab.grostictac)
-        succ = self.successors(player,cop,Bcop)
-        best_move = (-inf, None)
-        for s in succ:
-            val = min_turn(s[0], s[1], opponent(player), depth - 1, s_time,
-                           -inf, inf)
-            if val > best_move[0]:
-                best_move = (val, s)
-        #        print("val = ", val)
-        #        print_board(s[0])
-        return best_move[1]
-
-    def min_turn(self, last_move, player, depth, s_time, alpha, beta):
-        box_won = last_move[1]
-        if depth <= 0 or self.gagnepetit2(box_won) != False :  # or time() - s_time >= 10:
-            return evaluate(state, last_move, not player)
-        succ = successors(state, player, last_move)
-        for s in succ:
-            val = max_turn(s[0], s[1], opponent(player), depth - 1, s_time,
-                           alpha, beta)
-            if val < beta:
-                beta = val
-            if alpha >= beta:
-                break
-        return beta
-
-    def max_turn(self, last_move, player, depth, s_time, alpha, beta):
-        box_won = last_move[1]
-        if depth <= 0 or self.gagnepetit2(box_won) != False :  # or time() - s_time >= 20:
-            return evaluate(state, last_move, player)
-        succ = successors(state, player, last_move)
-        for s in succ:
-            val = min_turn(s[0], s[1], opponent(player), depth - 1, s_time,
-                           alpha, beta)
-            if alpha < val:
-                alpha = val
-            if alpha >= beta:
-                break
-        return alpha
-
-    #YOUFA LENNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-
-
-        # def minimaxGrand(self, current_board, is_ai_turn, depth=0, alpha=float('-inf'), beta=float('inf')):
-    #     if self.jeutab.gagnegros():
-    #         return 10 - depth if is_ai_turn else depth - 10
-    #     elif self.jeutab.estceegalite(self.jeutab.grostictac):
-    #         return 0
-    #     best_score = -float('inf') if is_ai_turn else float('inf')
-    #     available_moves = self.casesvide(current_board)
-    #     for move in available_moves:
-    #         current_board[move] = self.jeutab.joueurs[self.jeutab.quijoue if is_ai_turn else not self.jeutab.quijoue][0]
-    #         score = self.minimaxGrand(current_board, not is_ai_turn, depth + 1, alpha, beta)
-    #         current_board[move] = ""
-    #         if is_ai_turn:
-    #             best_score = max(best_score, score)
-    #             alpha = max(alpha, score)
-    #         else:
-    #             best_score = min(best_score, score)
-    #             beta = min(beta, score)
-    #
-    #         if beta <= alpha:
-    #             break
-    #
-    #     return best_score
-    #
-    # def best_move(self):
-    #     if self.jeutab.queltictac is None:
-    #         available_moves = [
-    #             (board_index, move)
-    #             for board_index, sub_board in self.jeutab.tableau.items()
-    #             if self.jeutab.grostictac[board_index] == ""
-    #             for move in self.casesvide(sub_board)
-    #         ]
-    #     else:
-    #         board_index = self.jeutab.queltictac
-    #         available_moves = [
-    #             (board_index, move)
-    #             for move in self.casesvide(self.jeutab.tableau[board_index])
-    #         ]
-    #
-    #     best_score = -float('inf')
-    #     best_move = None
-    #
-    #     for board_index, move in available_moves:
-    #         # position_copy = copy.deepcopy(self.jeutab.tableau) #je crois on en a besoin
-    #         self.jeutab.tableau[board_index][move] = self.jeutab.joueurs[self.jeutab.quijoue][0]
-    #         score = self.minimaxGrand(self.jeutab.tableau[board_index], False)
-    #         self.jeutab.tableau[board_index][move] = ""
-    #
-    #         if score > best_score:
-    #             best_score = score
-    #             best_move = (board_index, move)
-    #
-    #     print(best_move)
-    #     self.creerxo(self.butonsinv[(best_move[0], best_move[1])])
-    #     return best_move
-    #
 
     def jouerordi(self):
         if self.jeutab.quijoue == self.ordijoue:
@@ -1061,6 +900,7 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
         self.ordi = campordi #joue les x
         self.humain = not campordi
         self.modeordi = modeordi
+        self.probaspoke = pd.read_csv("PokemonProbs.csv", index_col = 0)
         self.jouerordi(True)
 
     def casesvide(self, tab1, tab2=None):
@@ -1075,8 +915,7 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
             choixgros = random.choice(self.casesvide(self.jeutab.grostictac))
             choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[choixgros], self.jeutab.tableau[choixgros])) #erreur vient du faite qu'il choisit une case qui est placee par lui
             choix = (choixgros, choixpetit)
-            pokemon = random.choice(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
-            self.mouvementpoke(self.butonsinv[(choix[0], choix[1])], pokemon)
+            self.mouvementpoke(self.butonsinv[(choix[0], choix[1])])
         else:
             choixpetit = random.choice(self.casesvide(self.jeutab.definitivementgagne[self.jeutab.queltictac], self.jeutab.tableau[self.jeutab.queltictac])) #erreur vient du faite qu'il choisit une case qui est placee par lui
             choix = (self.jeutab.queltictac, choixpetit)
@@ -1092,7 +931,7 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
         else:
             pass
 
-    def mouvementpoke(self, buton, pokemon=None):
+    def mouvementpoke(self, buton, p=None):
         if self.jeutab.quijoue == self.humain:
             mouv = self.butons[buton]
             if self.jeutab.fin:
@@ -1161,9 +1000,12 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
                 pass
             elif self.jeutab.mouvpossiblepoke(mouv):
                 if self.jeutab.tableau[mouv[0]][mouv[1]] == "":
+                    pokemon = random.choice(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
                     self.apreschoixsanscombat(mouv, buton, pokemon)
 
                 elif self.jeutab.tableau[mouv[0]][mouv[1]] == self.jeutab.joueurs[not self.jeutab.quijoue][0]:
+                    pokemon = self.choixordi(self.jeutab.pokemonutilise[mouv[0]][mouv[1]])
+
                     combat = self.jeutab.pokemon_combat(mouv, pokemon)
 
                     if combat == self.jeutab.joueurs[not self.jeutab.quijoue][0]:
@@ -1205,18 +1047,35 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
                                           highlightthickness=2)
-
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
         self.jeutab.choixpoke = None
 
         self.jouerordi()
         return
+
+    def choixordi(self, pokegag):
+        poke = self.probaspoke.loc[pokegag]
+        pokeligne = poke[poke >= 0.8].to_dict()
+        print(pokeligne.keys())
+        equipeset = set(self.jeutab.equipes[self.jeutab.joueurs[self.ordi][0]])
+        print(equipeset)
+        inter = set(pokeligne.keys()).intersection(equipeset)
+        return random.choice(list(inter)) if inter else random.choice(self.jeutab.joueurs[self.ordi][0])
 
     def rejouer(self):
         for i in self.postofrm:
