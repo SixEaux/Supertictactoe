@@ -40,7 +40,7 @@ class Menujeu(Tk):
         Button(main_menu, text="Quitter", font=("Helvetica", 16), command=self.quit).pack(pady=10)
 
     def menu_pokemon(self):
-        self.afficher_menu("Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
+        self.afficher_menu("Avec Pokémon", left_buttons=[("1 VS 1", lambda: self.allerau('pokemon')),
                                                     ("1 VS Ordi", lambda: self.allerau('jouerseulavecpoke'))],
                            right_buttons=[(f"Ordi joue {self.joueurs[self.campordi]}", self.bouton_changerval),
                                           ("Changer mode ordi", lambda: self.changermode())])
@@ -98,6 +98,7 @@ class Menujeu(Tk):
             JouerSeulGraphsanspoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
         elif enquoi == 'jouerseulavecpoke':
             JouerSeulGraphavecpoke(self.geometria, self.nbpokeparequipe, self.modeordi, self.campordi)
+
 
 class Jeutab:
     def __init__(self):
@@ -712,12 +713,22 @@ class MultijoueurPokemon(Tk):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
-            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1], highlightthickness=2)
+            self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                          highlightthickness=2)
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
 
         self.jeutab.choixpoke = None
 
@@ -1036,14 +1047,22 @@ class JouerSeulGraphavecpoke(MultijoueurPokemon):
 
         self.jeutab.changejoueur()
         self.txt.set(f"Tour de: {self.jeutab.joueurs[self.jeutab.quijoue][0]}")
-
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[0]].config(highlightbackground="grey", highlightthickness=2)
+        else:
+            for i in range(9):
+                self.postofrm[i].config(highlightbackground="grey", highlightthickness=2)
+
         self.jeutab.changetictac(mouv)
+
         if self.jeutab.queltictac is not None:
             self.postofrm[mouv[1]].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
                                           highlightthickness=2)
-
+        else:
+            for i in range(9):
+                if self.jeutab.grostictac[i] == '':
+                    self.postofrm[i].config(highlightbackground=self.jeutab.joueurs[self.jeutab.quijoue][1],
+                                            highlightthickness=2)
         self.jeutab.choixpoke = None
 
         self.jouerordi()
