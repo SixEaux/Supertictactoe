@@ -829,152 +829,118 @@ class JouerSeulGraphsanspoke(Multijoueur):
 #############################################################################################################################
     #LAHNE YABDA LCOOOODE
 
+    from math import inf
+    from collections import Counter
+    import itertools
+    from time import time
+
+    TIME_LIMIT = 5
+
+    # Define global variables
+    possible_goals = [
+        (0, 4, 8), (2, 4, 6),
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8)
+    ]
+    box_won = ["."] * 9
+
+    def successors(self, player,tab,bigtab):
+        succ = []
+        moves_idx = []
+        possibleindxgros = self.casesvide(Bcop)
+        possiblemoves = [self.casesvide(cop[i]) for i in range(0, 9)]
+
+        for Gidx in possibleindxgros:
+            for Pidx in possiblemoves[Gidx]:
+                moves_idx.append((Gidx,Pidx))
+                succ.append((cop)
+        return zip(succ, moves_idx)
 
 
 
-    def check_winner(self, board):
-        for pattern in self.jeutab.gagne:
-            a, b, c = pattern
-            if board[a] and board[a] == board[b] == board[c]:
-                return board[a]
-        return "Tie" if "" not in board else None
-
-    def check_threat(self, board, player):
-        for pattern in self.jeutab.gagne:
-            a, b, c = pattern
-            if board[a] == player and board[b] == player and board[c] == "":
-                return c
-            if board[a] == player and board[c] == player and board[b] == "":
-                return b
-            if board[b] == player and board[c] == player and board[a] == "":
-                return a
-        return None
-
-    def evaluate_position(self, board, player):
-        winner = self.check_winner(board)
-        if winner == "O":
-            return 1000  # AI wins
-        if winner == "X":
-            return -1000  # Human wins
-        if winner == "Tie":
-            return 0  # Tie
-
+    def evaluate_small_box(tab, player):
+        global possible_goals
         score = 0
-        for pattern in self.jeutab.gagne:
-            a, b, c = pattern
-            line = [board[a], board[b], board[c]]
-            if line.count("O") == 2 and line.count("") == 1:  # AI about to win
+        three = Counter(player * 3)
+        two = Counter(player * 2 + ".")
+        one = Counter(player * 1 + "." * 2)
+        three_opponent = Counter(opponent(player) * 3)
+        two_opponent = Counter(opponent(player) * 2 + ".")
+        one_opponent = Counter(opponent(player) * 1 + "." * 2)
+
+        for idxs in possible_goals:
+            (x, y, z) = idxs
+            current = Counter([tab[x], tab[y], tab[z]])
+
+            if current == three:
                 score += 100
-            if line.count("X") == 2 and line.count("") == 1:  # Human about to win
-                score -= 100
-            if line.count("O") == 1 and line.count("") == 2:  # AI potential double threat
+            elif current == two:
                 score += 10
-            if line.count("X") == 1 and line.count("") == 2:  # Block human double threat
+            elif current == one:
+                score += 1
+            elif current == three_opponent:
+                score -= 100
+
+            elif current == two_opponent:
                 score -= 10
+            elif current == one_opponent:
+                score -= 1
+
         return score
 
-    def check_winner(self, board):
-        for pattern in self.jeutab.gagne:
-            a, b, c = pattern
-            if board[a] and board[a] == board[b] == board[c]:
-                return board[a]
-        return "Tie" if "" not in board else None
+    def evaluate(state, player):
+        global box_won
+        score = 0
+        score += evaluate_small_box(box_won, player) * 200
+        for b in range(9):
+            idxs = indices_of_box(b)
+            box_str = state[idxs[0]: idxs[-1] + 1]
+            score += evaluate_small_box(box_str, player)
+        return score
 
-    def check_threat(self, board, player):
-        for pattern in self.jeutab.gagne:
-            a, b, c = pattern
-            if board[a] == player and board[b] == player and board[c] == "":
-                return c
-            if board[a] == player and board[c] == player and board[b] == "":
-                return b
-            if board[b] == player and board[c] == player and board[a] == "":
-                return a
-        return None
+    def minimax(self, player, depth, s_time):
+        cop = copy.deepcopy(self.jeutab.tableau)
+        Bcop = copy.deepcopy(self.jeutab.grostictac)
+        succ = self.successors(player,cop,Bcop)
+        best_move = (-inf, None)
+        for s in succ:
+            val = min_turn(s[0], s[1], opponent(player), depth - 1, s_time,
+                           -inf, inf)
+            if val > best_move[0]:
+                best_move = (val, s)
+        #        print("val = ", val)
+        #        print_board(s[0])
+        return best_move[1]
 
-    def minimax(self, board, depth, is_maximizing, max_depth=5):
-        if depth >= max_depth:
-            return 0
-        winner = self.check_winner(board)
-        if winner == "O":
-            return 1000 - depth
-        if winner == "X":
-            return depth - 1000
-        if winner == "Tie":
-            return 0
+    def min_turn(self, last_move, player, depth, s_time, alpha, beta):
+        box_won = last_move[1]
+        if depth <= 0 or self.gagnepetit2(box_won) != False :  # or time() - s_time >= 10:
+            return evaluate(state, last_move, not player)
+        succ = successors(state, player, last_move)
+        for s in succ:
+            val = max_turn(s[0], s[1], opponent(player), depth - 1, s_time,
+                           alpha, beta)
+            if val < beta:
+                beta = val
+            if alpha >= beta:
+                break
+        return beta
 
-        if is_maximizing:
-            best_score = float('-inf')
-            for i in range(9):
-                if board[i] == "":
-                    board[i] = "O"
-                    score = self.minimax(board, depth + 1, False, max_depth)
-                    board[i] = ""
-                    best_score = max(score, best_score)
-            return best_score
-        else:
-            best_score = float('inf')
-            for i in range(9):
-                if board[i] == "":
-                    board[i] = "X"
-                    score = self.minimax(board, depth + 1, True, max_depth)
-                    board[i] = ""
-                    best_score = min(score, best_score)
-            return best_score
+    def max_turn(self, last_move, player, depth, s_time, alpha, beta):
+        box_won = last_move[1]
+        if depth <= 0 or self.gagnepetit2(box_won) != False :  # or time() - s_time >= 20:
+            return evaluate(state, last_move, player)
+        succ = successors(state, player, last_move)
+        for s in succ:
+            val = min_turn(s[0], s[1], opponent(player), depth - 1, s_time,
+                           alpha, beta)
+            if alpha < val:
+                alpha = val
+            if alpha >= beta:
+                break
+        return alpha
 
-    def minmaxGrand(self):
-        best_score = float('-inf')
-        best_move = None
-        if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
-            active_boards = [i for i in range(9) if self.jeutab.grostictac[i] == ""]
-        else:
-            active_boards = [self.jeutab.queltictac]
-
-        for board_index in active_boards:
-            for i in range(9):
-                if self.jeutab.tableau[board_index][i] == "":
-                    self.jeutab.tableau[board_index][i] = "O"
-                    score = self.minimax(self.jeutab.tableau[board_index], 0, False, max_depth=5)
-                    self.jeutab.tableau[board_index][i] = ""
-                    if score > best_score:
-                        best_score = score
-                        best_move = (board_index, i)
-
-        return best_move, best_score
-    def jeuminmaxGrand(self):
-        if self.jeutab.queltictac is None or self.gagnepetit2(self.jeutab.tableau.get(self.jeutab.queltictac, [])):
-            best_move, _ = self.minmaxGrand()
-            if best_move:
-                board_index, move_index = best_move
-                button = self.butonsinv.get((board_index, move_index))
-                if button:
-                    self.creerxo(button)
-        else:
-            new_board = self.jeutab.tableau[self.jeutab.queltictac]
-            threat = self.check_threat(new_board, "X")
-            if threat is not None:
-                move_index = threat
-            else:
-                best_score = float('-inf')
-                best_move = None
-                for i in range(9):
-                    if new_board[i] == "":
-                        new_board[i] = "O"
-                        score = self.minimax(new_board, 0, False, max_depth=1)
-                        new_board[i] = ""
-                        if score > best_score:
-                            best_score = score
-                            best_move = i
-
-                if best_move is not None:
-                    move_index = best_move
-
-            button = self.butonsinv.get((self.jeutab.queltictac, move_index))
-            if button:
-                self.creerxo(button)
-
-
-#YOUFA LENNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
+    #YOUFA LENNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
 
